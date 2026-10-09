@@ -10,8 +10,25 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 file. No code yet. All machine-wide tools are installed (see "Prerequisites").
 
 **Next steps:**
-1. Start **Step 1** of "Technical plan (G) → Build order" below: scaffold the backend.
-2. Work through the build order one step at a time; tick off the G checklist as features work.
+1. Kalle creates the `backend` branch from `main`, then `backend/scaffold` from `backend`
+   (see "Git workflow").
+2. Start **Step 1** of "Technical plan (G) → Build order" below: scaffold the backend.
+3. Work through the build order one step at a time; tick off the G checklist as features work.
+
+## Git workflow (Kalle, 2026-10-09)
+Kalle runs all git commands. No pull requests; merges are done locally.
+```
+main                     ← finished, runnable versions only
+├── backend              ← collects finished backend tasks
+│   ├── backend/scaffold   (one short branch per task / build step)
+│   └── backend/auth-jwt ...
+└── frontend             ← created from main AFTER backend is merged in
+    └── frontend/scaffold ...
+```
+- Task branch: create from its area branch, commit small, merge back into the area branch, delete.
+- Area branch → `main` when a milestone works (e.g. backend steps 1–5 done and tested).
+- `frontend` is branched from `main` once the backend is merged, so the API code is on disk to run against.
+- Merge with `git merge --no-ff <branch>` so each task shows up as its own merge commit in history.
 
 ## How we work (Kalle, 2026-10-09)
 - **Kalle writes all the code.** Claude is a guide: explains what to build next, why, and how the
@@ -168,6 +185,9 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **First bid must be higher than the start price** (2026-10-09). *Why:* otherwise the price means nothing.
 - **Open = StartDate ≤ now < EndDate** (2026-10-09). *Why:* an auction that hasn't started shouldn't
   be searchable or take bids. The assignment only defines the end date, so this is our interpretation.
+- **Branches: `main` → `backend`/`frontend` → one task branch per step, no PRs** (2026-10-09).
+  *Why:* Kalle wants a clear split by area and small, isolated tasks; solo project, so local
+  merges are enough. Long-lived area branches can drift, so merge to `main` at each milestone.
 - **CLAUDE.md stays in the repo** (2026-10-09). *Why:* the school allows AI, the old commit already
   contains it, and rewriting history isn't worth the risk. Grading is a live demo.
 
