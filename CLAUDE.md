@@ -6,29 +6,49 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 
 ## Status – PICK UP HERE
 
-**Where we are (2026-10-09):** Planning for G is done. Repo has only README + .gitignore + this
-file. No code yet. All machine-wide tools are installed (see "Prerequisites").
+**Where we are (2026-10-09):** Build **Step 1 (backend scaffold) works** on branch
+`backend-scaffold`: `backend/` project `AuctionApi` (net10.0, controllers), 4 packages,
+connection string `DefaultConnection` in `appsettings.json`, CORS in `Program.cs`.
+Verified: `GET http://localhost:5139/weatherforecast` → 200 + `Access-Control-Allow-Origin: *`.
 
 **Next steps:**
-1. Kalle creates the `backend` branch from `main`, then `backend/scaffold` from `backend`
-   (see "Git workflow").
-2. Start **Step 1** of "Technical plan (G) → Build order" below: scaffold the backend.
-3. Work through the build order one step at a time; tick off the G checklist as features work.
+1. Delete the template's weather example (`WeatherForecastController.cs`, `WeatherForecast.cs`,
+   weather request in `AuctionApi.http`); check `dotnet build` still passes.
+2. Commit on `backend-scaffold`, merge into `backend` with `--no-ff`, push, delete task branch.
+3. **Step 2:** new branch `backend-entities-db` → entities + DbContext + first migration.
 
 ## Git workflow (Kalle, 2026-10-09)
 Kalle runs all git commands. No pull requests; merges are done locally.
 ```
 main                     ← finished, runnable versions only
 ├── backend              ← collects finished backend tasks
-│   ├── backend/scaffold   (one short branch per task / build step)
-│   └── backend/auth-jwt ...
+│   ├── backend-scaffold   (one short branch per task / build step)
+│   └── backend-auth-jwt ...
 └── frontend             ← created from main AFTER backend is merged in
-    └── frontend/scaffold ...
+    └── frontend-scaffold ...
 ```
 - Task branch: create from its area branch, commit small, merge back into the area branch, delete.
 - Area branch → `main` when a milestone works (e.g. backend steps 1–5 done and tested).
 - `frontend` is branched from `main` once the backend is merged, so the API code is on disk to run against.
 - Merge with `git merge --no-ff <branch>` so each task shows up as its own merge commit in history.
+- Task branches use a **dash**, not a slash (`backend-scaffold`, not `backend/scaffold`): Git can't
+  have both a branch `backend` and `backend/...` (see Learning notes).
+
+## Command cheat sheet (grows as we use new commands)
+Pattern: `tool verb [what] [options]`. Stuck? `<tool> <verb> --help`. Git Bash: ↑ = history,
+Ctrl+R = search history, Tab = complete names.
+
+| Situation | Command |
+|---|---|
+| Where am I / what changed? | `git status` · `git branch -a` · `git log --oneline -5` |
+| Start a task | `git switch backend` → `git pull` → `git switch -c backend-<task>` |
+| Save work | `git add .` → `git commit -m "..."` |
+| First push of a new branch | `git push -u origin <branch>` (after that: `git push`) |
+| Finish a task | `git switch backend` → `git merge --no-ff backend-<task>` → `git push` → `git branch -d backend-<task>` |
+| New .NET project | `dotnet new webapi --use-controllers -o <folder> -n <Name>` |
+| Add a NuGet package | `dotnet add package <Name> [--version x.y.z]` (inside the project folder) |
+| Does it compile? | `dotnet build` |
+| Run the API | `dotnet run` (stop: Ctrl+C) |
 
 ## How we work (Kalle, 2026-10-09)
 - **Kalle writes all the code.** Claude is a guide: explains what to build next, why, and how the
@@ -119,7 +139,7 @@ Never copy its code, CSS, texts or visual design.** Write everything from scratc
 
 **Downloaded per project during scaffolding (not yet):**
 - Backend (NuGet): `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Design`,
-  `Microsoft.AspNetCore.Authentication.JwtBearer`, `AutoMapper`.
+  `Microsoft.AspNetCore.Authentication.JwtBearer`, `AutoMapper` **16.1.1** (same as lesson demo).
   Passwords hashed with ASP.NET Core's built-in `PasswordHasher<T>` (no extra package).
 - Frontend (npm): Vite React-TS template (`react`, `react-dom`, `typescript`, `vite`) + `react-router-dom`.
 
@@ -188,6 +208,9 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **Branches: `main` → `backend`/`frontend` → one task branch per step, no PRs** (2026-10-09).
   *Why:* Kalle wants a clear split by area and small, isolated tasks; solo project, so local
   merges are enough. Long-lived area branches can drift, so merge to `main` at each milestone.
+- **AutoMapper 16.1.1** (2026-10-09). *Why:* exact version in the lesson demo
+  `DemoWebAPI_Automapper.csproj`. v15+ wants a license key; without one it only logs a warning
+  at startup (the lesson runs it that way too). Expected, not an error.
 - **CLAUDE.md stays in the repo** (2026-10-09). *Why:* the school allows AI, the old commit already
   contains it, and rewriting history isn't worth the risk. Grading is a live demo.
 
@@ -198,6 +221,8 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **JWT (JSON Web Token):** signed token the API issues at login; the client sends it in the
   `Authorization: Bearer <token>` header to prove who it is.
 - **EF Core:** ORM that maps C# classes to SQL Server tables; migrations create/update the schema.
+- **CORS (Cross-Origin Resource Sharing):** browser rule; a page may only read responses from
+  another origin (protocol + host + port) if that server sends `Access-Control-Allow-Origin`.
 - **Context API:** React's built-in way to share state (e.g. logged-in user) without passing props down.
 
 ## Learning notes (question → answer → why)
@@ -210,6 +235,13 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **How do I stop git tracking a file that's already committed?** → Add it to `.gitignore`, then
   run `git rm --cached <file>` and commit. *Why:* `.gitignore` only affects untracked files;
   `--cached` removes the file from git's index but keeps it on disk. Old commits still contain it.
+- **Why does the API need CORS?** → React (`localhost:5173`) and the API (`localhost:5xxx`) are
+  different origins; the browser blocks the response unless the API allows it via `UseCors`.
+  *Why:* Same-Origin Policy protects users' browsers. Only browsers enforce it, so `.http`
+  files/Postman work without CORS. It doesn't secure the API — JWT does that.
+- **Why did `git switch -c backend/scaffold` fail with "cannot lock ref"?** → A branch `backend`
+  already existed. *Why:* Git stores each branch as a file in `.git/refs/heads/`; `backend` is a
+  file, so Git can't also make a folder `backend/` for `scaffold`. Fix: name it `backend-scaffold`.
 
 ## Original assignment text (Swedish, verbatim)
 
