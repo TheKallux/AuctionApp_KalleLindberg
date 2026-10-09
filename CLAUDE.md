@@ -10,7 +10,7 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 file. No code yet. All machine-wide tools are installed (see "Prerequisites").
 
 **Next steps:**
-1. Kalle creates the `backend` branch from `main`, then `backend/scaffold` from `backend`
+1. Kalle creates the `backend` branch from `main`, then `backend-scaffold` from `backend`
    (see "Git workflow").
 2. Start **Step 1** of "Technical plan (G) → Build order" below: scaffold the backend.
 3. Work through the build order one step at a time; tick off the G checklist as features work.
@@ -20,15 +20,17 @@ Kalle runs all git commands. No pull requests; merges are done locally.
 ```
 main                     ← finished, runnable versions only
 ├── backend              ← collects finished backend tasks
-│   ├── backend/scaffold   (one short branch per task / build step)
-│   └── backend/auth-jwt ...
+│   ├── backend-scaffold   (one short branch per task / build step)
+│   └── backend-auth-jwt ...
 └── frontend             ← created from main AFTER backend is merged in
-    └── frontend/scaffold ...
+    └── frontend-scaffold ...
 ```
 - Task branch: create from its area branch, commit small, merge back into the area branch, delete.
 - Area branch → `main` when a milestone works (e.g. backend steps 1–5 done and tested).
 - `frontend` is branched from `main` once the backend is merged, so the API code is on disk to run against.
 - Merge with `git merge --no-ff <branch>` so each task shows up as its own merge commit in history.
+- Task branches use a **dash**, not a slash (`backend-scaffold`, not `backend/scaffold`): Git can't
+  have both a branch `backend` and `backend/...` (see Learning notes).
 
 ## How we work (Kalle, 2026-10-09)
 - **Kalle writes all the code.** Claude is a guide: explains what to build next, why, and how the
@@ -210,6 +212,9 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **How do I stop git tracking a file that's already committed?** → Add it to `.gitignore`, then
   run `git rm --cached <file>` and commit. *Why:* `.gitignore` only affects untracked files;
   `--cached` removes the file from git's index but keeps it on disk. Old commits still contain it.
+- **Why did `git switch -c backend/scaffold` fail with "cannot lock ref"?** → A branch `backend`
+  already existed. *Why:* Git stores each branch as a file in `.git/refs/heads/`; `backend` is a
+  file, so Git can't also make a folder `backend/` for `scaffold`. Fix: name it `backend-scaffold`.
 
 ## Original assignment text (Swedish, verbatim)
 
