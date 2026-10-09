@@ -6,16 +6,15 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 
 ## Status – PICK UP HERE
 
-**Where we are (2026-10-09):** Build **Step 1 (backend scaffold) works** on branch
-`backend-scaffold`: `backend/` project `AuctionApi` (net10.0, controllers), 4 packages,
-connection string `DefaultConnection` in `appsettings.json`, CORS in `Program.cs`.
-Verified: `GET http://localhost:5139/weatherforecast` → 200 + `Access-Control-Allow-Origin: *`.
+**Where we are (2026-10-09):** Build **Step 1 (backend scaffold) done** and merged into `backend`
+(pushed): `backend/` project `AuctionApi` (net10.0, controllers, template weather example removed),
+4 packages, connection string `DefaultConnection` in `appsettings.json`, CORS in `Program.cs`.
+API runs on `http://localhost:5139`. `main` is unchanged (merge `backend` → `main` after Step 5).
 
 **Next steps:**
-1. Delete the template's weather example (`WeatherForecastController.cs`, `WeatherForecast.cs`,
-   weather request in `AuctionApi.http`); check `dotnet build` still passes.
-2. Commit on `backend-scaffold`, merge into `backend` with `--no-ff`, push, delete task branch.
-3. **Step 2:** new branch `backend-entities-db` → entities + DbContext + first migration.
+1. **Step 2** on branch `backend-entities-db`: entities (`Data/Entities/`) → `AuctionDbContext`
+   (`Data/`) → register in `Program.cs` → `dotnet ef migrations add InitialCreate` →
+   `dotnet ef database update` → verify tables exist in LocalDB.
 
 ## Git workflow (Kalle, 2026-10-09)
 Kalle runs all git commands. No pull requests; merges are done locally.
@@ -45,6 +44,11 @@ Ctrl+R = search history, Tab = complete names.
 | Save work | `git add .` → `git commit -m "..."` |
 | First push of a new branch | `git push -u origin <branch>` (after that: `git push`) |
 | Finish a task | `git switch backend` → `git merge --no-ff backend-<task>` → `git push` → `git branch -d backend-<task>` |
+| Create folder(s) | `mkdir -p backend/Data/Entities` (`-p` = also parents, no error if exists) |
+| Create empty files | `touch backend/Data/Entities/{User,Auction,Bid}.cs` (`{a,b}` = several at once) |
+| List files | `ls <folder>` |
+| Open in VS Code | `code .` (whole folder) · `code <file>` |
+| Vim (e.g. merge message) | save + quit: `:wq` + Enter |
 | New .NET project | `dotnet new webapi --use-controllers -o <folder> -n <Name>` |
 | Add a NuGet package | `dotnet add package <Name> [--version x.y.z]` (inside the project folder) |
 | Does it compile? | `dotnet build` |
