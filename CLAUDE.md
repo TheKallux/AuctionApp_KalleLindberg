@@ -6,21 +6,19 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 
 ## Status – PICK UP HERE
 
-**Where we are (2026-10-09, end of day):** Step 1 (scaffold) done and merged into `backend`.
-**Step 2 half done** on branch `backend-entities-db` (committed locally, **not pushed yet**):
-- Done + builds clean: entities `User`, `Auction`, `Bid` in `Data/Entities/` (FK + navigation
-  pairs, lists on the "one" side) and `Data/AuctionDbContext.cs` (3 DbSets; `OnModelCreating`:
-  max length + unique index on Email/Name, `HasPrecision(18,2)` on money, Bid→User `Restrict`).
+**Where we are (2026-10-10):** Steps 1–2 done.
+- Step 2 on `backend-entities-db`: entities `User`, `Auction`, `Bid` (`Data/Entities/`),
+  `Data/AuctionDbContext.cs` (DbSets + rules in `OnModelCreating`), registered with
+  `AddDbContext` in `Program.cs`, migration `InitialCreate` in `backend/Migrations/`.
+- Database `AuctionDb` exists in LocalDB. Verified with sqlcmd: tables `Users`, `Auctions`, `Bids`
+  + `__EFMigrationsHistory`. Migration checked: unique Email/Name, decimal(18,2), Bid→User Restrict.
+- Added the missing `Microsoft.EntityFrameworkCore.Design` 10.0.12 (wasn't installed in Step 1).
 - `main` is unchanged (merge `backend` → `main` after Step 5). API runs on `http://localhost:5139`.
 
-**Next steps (Step 2, Part 3 onwards):**
-1. `Program.cs`: add `using AuctionApi.Data;` + `using Microsoft.EntityFrameworkCore;` and
-   `builder.Services.AddDbContext<AuctionDbContext>(options => options.UseSqlServer(
-   builder.Configuration.GetConnectionString("DefaultConnection")));` → `dotnet build`.
-2. Migration: `dotnet ef migrations add InitialCreate` → read the generated file together →
-   `dotnet ef database update` → verify tables `Users`, `Auctions`, `Bids` exist in LocalDB.
-3. Commit, merge `backend-entities-db` into `backend` (`--no-ff`), push, delete the task branch.
-4. Then **Step 3:** register + login + JWT.
+**Next steps:**
+1. Commit, merge `backend-entities-db` into `backend` (`--no-ff`), push, delete the task branch
+   (local + `git push origin --delete backend-entities-db`).
+2. **Step 3** on `backend-auth-jwt`: register + login + JWT → test with `AuctionApi.http`.
 
 **Last session recap (2026-10-09)** — greet Kalle with this at the start of the next session:
 - Set up git workflow: `main` → `backend` → task branches with dashes (`backend-scaffold`).
@@ -68,6 +66,11 @@ Ctrl+R = search history, Tab = complete names.
 | Vim (e.g. merge message) | save + quit: `:wq` + Enter |
 | New .NET project | `dotnet new webapi --use-controllers -o <folder> -n <Name>` |
 | Add a NuGet package | `dotnet add package <Name> [--version x.y.z]` (inside the project folder) |
+| Create a migration (DB untouched) | `dotnet ef migrations add <Name>` (needs `EntityFrameworkCore.Design`) |
+| Apply migrations to the DB | `dotnet ef database update` |
+| Undo the last (unapplied) migration | `dotnet ef migrations remove` |
+| List tables in the DB | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d AuctionDb -Q "SELECT name FROM sys.tables"` |
+| Where am I? | `pwd` · `ls` (a `.csproj` must be here for `dotnet` commands) · `cd ..` = up one |
 | Does it compile? | `dotnet build` |
 | Run the API | `dotnet run` (stop: Ctrl+C) |
 
@@ -84,6 +87,7 @@ Source: assignment text, quoted in full at the bottom of this file.
 
 ### G (pass)
 - [ ] Create user (name, email, password) and log in. JWT authentication.
+- [x] (Foundation) Data saved in SQL Server: `AuctionDb` with Users/Auctions/Bids (2026-10-10).
 - [ ] Logged-in user can create an auction: title, description, price, start date, end date, creator.
 - [ ] Auction is **open** if end date > current date and time.
 - [ ] Search auctions by title. Only open auctions in search results.
@@ -270,6 +274,12 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
   *Why:* strings without a length become `nvarchar(max)` by default.
 - **Why `OnDelete(Restrict)` on Bid → User?** → User→Bid and User→Auction→Bid are two cascade
   paths; SQL Server refuses that. *Why:* it can't decide which delete path wins.
+- **What is a migration?** → Generated C# (`Up()` = apply, `Down()` = undo) describing schema
+  changes. `migrations add` creates it; `database update` runs it. *Why:* two steps so you can
+  read it first; the DB's history lives in git with the code. `__EFMigrationsHistory` tracks
+  which migrations have run.
+- **"dotnet ef … doesn't reference Microsoft.EntityFrameworkCore.Design"?** → Install that package
+  (same version as the other EF packages). *Why:* the EF tool needs it to load the DbContext.
 - **`git add .` didn't include CLAUDE.md?** → `.` = current folder only; I was in `backend/`.
   *Why:* use `git add -A` for the whole repo, and `git status` before switching branches.
 - **Why did `git switch -c backend/scaffold` fail with "cannot lock ref"?** → A branch `backend`
