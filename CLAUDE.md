@@ -6,15 +6,32 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 
 ## Status – PICK UP HERE
 
-**Where we are (2026-10-09):** Build **Step 1 (backend scaffold) done** and merged into `backend`
-(pushed): `backend/` project `AuctionApi` (net10.0, controllers, template weather example removed),
-4 packages, connection string `DefaultConnection` in `appsettings.json`, CORS in `Program.cs`.
-API runs on `http://localhost:5139`. `main` is unchanged (merge `backend` → `main` after Step 5).
+**Where we are (2026-10-09, end of day):** Step 1 (scaffold) done and merged into `backend`.
+**Step 2 half done** on branch `backend-entities-db` (committed locally, **not pushed yet**):
+- Done + builds clean: entities `User`, `Auction`, `Bid` in `Data/Entities/` (FK + navigation
+  pairs, lists on the "one" side) and `Data/AuctionDbContext.cs` (3 DbSets; `OnModelCreating`:
+  max length + unique index on Email/Name, `HasPrecision(18,2)` on money, Bid→User `Restrict`).
+- `main` is unchanged (merge `backend` → `main` after Step 5). API runs on `http://localhost:5139`.
 
-**Next steps:**
-1. **Step 2** on branch `backend-entities-db`: entities (`Data/Entities/`) → `AuctionDbContext`
-   (`Data/`) → register in `Program.cs` → `dotnet ef migrations add InitialCreate` →
-   `dotnet ef database update` → verify tables exist in LocalDB.
+**Next steps (Step 2, Part 3 onwards):**
+1. `Program.cs`: add `using AuctionApi.Data;` + `using Microsoft.EntityFrameworkCore;` and
+   `builder.Services.AddDbContext<AuctionDbContext>(options => options.UseSqlServer(
+   builder.Configuration.GetConnectionString("DefaultConnection")));` → `dotnet build`.
+2. Migration: `dotnet ef migrations add InitialCreate` → read the generated file together →
+   `dotnet ef database update` → verify tables `Users`, `Auctions`, `Bids` exist in LocalDB.
+3. Commit, merge `backend-entities-db` into `backend` (`--no-ff`), push, delete the task branch.
+4. Then **Step 3:** register + login + JWT.
+
+**Last session recap (2026-10-09)** — greet Kalle with this at the start of the next session:
+- Set up git workflow: `main` → `backend` → task branches with dashes (`backend-scaffold`).
+- Step 1: scaffolded the Web API (project, packages, connection string, CORS), tested, merged.
+- Learned what CORS is and why the API needs it.
+- Installed C# Dev Kit, turned off AI suggestions in VS Code, started a command cheat sheet.
+- Step 2 (half): wrote the `User`/`Auction`/`Bid` entities and `AuctionDbContext` with rules.
+
+**Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
+line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
+the Git Bash profile.
 
 ## Git workflow (Kalle, 2026-10-09)
 Kalle runs all git commands. No pull requests; merges are done locally.
@@ -41,7 +58,7 @@ Ctrl+R = search history, Tab = complete names.
 |---|---|
 | Where am I / what changed? | `git status` · `git branch -a` · `git log --oneline -5` |
 | Start a task | `git switch backend` → `git pull` → `git switch -c backend-<task>` |
-| Save work | `git add .` → `git commit -m "..."` |
+| Save work | `git add -A` (whole repo; `.` = current folder only) → `git commit -m "..."` |
 | First push of a new branch | `git push -u origin <branch>` (after that: `git push`) |
 | Finish a task | `git switch backend` → `git merge --no-ff backend-<task>` → `git push` → `git branch -d backend-<task>` |
 | Create folder(s) | `mkdir -p backend/Data/Entities` (`-p` = also parents, no error if exists) |
@@ -243,6 +260,18 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
   different origins; the browser blocks the response unless the API allows it via `UseCors`.
   *Why:* Same-Origin Policy protects users' browsers. Only browsers enforce it, so `.http`
   files/Postman work without CORS. It doesn't secure the API — JWT does that.
+- **What's the difference between `UserId` and `User` on an entity?** → `UserId` (int) is the
+  foreign key column; `User` is a navigation property (no column) that EF fills in.
+  *Why:* EF links `XId` + `X` by naming convention; you set only the id when saving.
+- **Why does `string` need `= string.Empty` but `int Id` doesn't?** → `int` is a value type
+  (default 0, never null); `string`/classes/lists are reference types (default null).
+  *Why:* nullable checks warn about possible nulls; use `string.Empty`, `new()` or `null!` (EF fills it).
+- **Why `HasMaxLength` before a unique index?** → SQL Server can't index `nvarchar(max)`.
+  *Why:* strings without a length become `nvarchar(max)` by default.
+- **Why `OnDelete(Restrict)` on Bid → User?** → User→Bid and User→Auction→Bid are two cascade
+  paths; SQL Server refuses that. *Why:* it can't decide which delete path wins.
+- **`git add .` didn't include CLAUDE.md?** → `.` = current folder only; I was in `backend/`.
+  *Why:* use `git add -A` for the whole repo, and `git status` before switching branches.
 - **Why did `git switch -c backend/scaffold` fail with "cannot lock ref"?** → A branch `backend`
   already existed. *Why:* Git stores each branch as a file in `.git/refs/heads/`; `backend` is a
   file, so Git can't also make a folder `backend/` for `scaffold`. Fix: name it `backend-scaffold`.
