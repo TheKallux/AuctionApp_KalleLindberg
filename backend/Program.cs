@@ -1,6 +1,7 @@
 using AuctionApi.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
+using AuctionApi.Data.Interfaces;
+using AuctionApi.Data.Repos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +12,8 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AuctionDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddOpenApi();
-
 builder.Services.AddCors();
 
 var app = builder.Build();
