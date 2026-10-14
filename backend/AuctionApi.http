@@ -11,6 +11,8 @@ Content-Type: application/json
 
 ###
 
+# @name login
+
 POST {{AuctionApi_HostAddress}}/api/auth/login
 Content-Type: application/json
 
@@ -18,5 +20,14 @@ Content-Type: application/json
   "email": "test@test.se",
   "password": "test123"
 }
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auth/me
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auth/me
+Authorization: Bearer {{login.response.body.token}}
 
 ###

@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using AuctionApi.Core.Exceptions;
 using AuctionApi.Core.Interfaces;
 using AuctionApi.Data.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuctionApi.Controllers;
@@ -38,5 +40,14 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Fel e-post eller lösenord." });
 
         return Ok(result);
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var name = User.FindFirstValue(ClaimTypes.Name);
+        return Ok(new { id, name });
     }
 }

@@ -17,19 +17,23 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 
 - Step 2 merged into `backend` and pushed (2026-10-10).
 
-**Step 3 in progress** on `backend-auth-jwt` (parts: 1 DTOs → 2 UserRepo → 3 AuthService/register
-→ 4 AuthController + `.http` test → 5 JWT settings + token + login → 6 `Program.cs` auth + test):
-- Parts 1–5 done (2026-10-14): DTOs, `UserRepo`, `AuthService` (register rules, hashing, login,
+**Step 3 done (2026-10-14)** on `backend-auth-jwt` — all 6 parts. Part 6: `AddAuthentication`
++ `AddJwtBearer` (validates issuer, audience, lifetime, signing key) and `UseAuthentication()` in
+`Program.cs`; `[Authorize] GET /api/auth/me` returns id + name from the token. Tested:
+`/me` without token → 401, with `Bearer {{login.response.body.token}}` → 200 `{ id: "1", name: "testuser" }`.
+- Parts 1–5 (2026-10-14): DTOs, `UserRepo`, `AuthService` (register rules, hashing, login,
   `CreateToken` with NameIdentifier + Name claims, 2 h expiry), `AuthController`
   (`POST /api/auth/register` → 201/400, `POST /api/auth/login` → 200 + token / 401), `Jwt`
   section in `appsettings.json`. Tested via `AuctionApi.http`: register + login work.
 - Part 5 code (AuthService/AuthController/appsettings/.http) was written by Claude on Kalle's
   request → walk through it with Kalle so they can explain it at the demo.
-- **Next: Part 6** — `Program.cs`: `AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-  .AddJwtBearer(...)` with `TokenValidationParameters` (issuer, audience, lifetime, signing key
-  from config) + `app.UseAuthentication()` before `UseAuthorization()`. Test with a temporary
-  `[Authorize]` endpoint (401 without token, 200 with `Authorization: Bearer <token>`).
-  Then commit + merge `backend-auth-jwt` → `backend`.
+
+**Next steps:**
+1. Commit, merge `backend-auth-jwt` → `backend` (`--no-ff`), push, delete the task branch
+   (`git push origin --delete backend-auth-jwt` first, then `git branch -d`).
+2. Walk through the Part 5/6 code with Kalle (token creation + validation) so they can explain it.
+3. **Step 4** on `backend-auctions`: auctions endpoints (create with `[Authorize]` + creator from
+   token claim, search open auctions by title, get one). First use of AutoMapper.
 
 **Last session recap (2026-10-10)** — greet Kalle with this at the start of the next session:
 - Registered the DbContext in `Program.cs`; installed the missing EF `Design` package.
@@ -99,6 +103,7 @@ Source: assignment text, quoted in full at the bottom of this file.
 
 ### G (pass)
 - [ ] Create user (name, email, password) and log in. JWT authentication.
+      *(Backend done + tested 2026-10-14; React forms still to do.)*
 - [x] (Foundation) Data saved in SQL Server: `AuctionDb` with Users/Auctions/Bids (2026-10-10).
 - [ ] Logged-in user can create an auction: title, description, price, start date, end date, creator.
 - [ ] Auction is **open** if end date > current date and time.
