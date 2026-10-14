@@ -15,17 +15,33 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 - Added the missing `Microsoft.EntityFrameworkCore.Design` 10.0.12 (wasn't installed in Step 1).
 - `main` is unchanged (merge `backend` → `main` after Step 5). API runs on `http://localhost:5139`.
 
-**Next steps:**
-1. Commit, merge `backend-entities-db` into `backend` (`--no-ff`), push, delete the task branch
-   (local + `git push origin --delete backend-entities-db`).
-2. **Step 3** on `backend-auth-jwt`: register + login + JWT → test with `AuctionApi.http`.
+- Step 2 merged into `backend` and pushed (2026-10-10).
 
-**Last session recap (2026-10-09)** — greet Kalle with this at the start of the next session:
-- Set up git workflow: `main` → `backend` → task branches with dashes (`backend-scaffold`).
-- Step 1: scaffolded the Web API (project, packages, connection string, CORS), tested, merged.
-- Learned what CORS is and why the API needs it.
-- Installed C# Dev Kit, turned off AI suggestions in VS Code, started a command cheat sheet.
-- Step 2 (half): wrote the `User`/`Auction`/`Bid` entities and `AuctionDbContext` with rules.
+**Step 3 done (2026-10-14)** on `backend-auth-jwt` — all 6 parts. Part 6: `AddAuthentication`
++ `AddJwtBearer` (validates issuer, audience, lifetime, signing key) and `UseAuthentication()` in
+`Program.cs`; `[Authorize] GET /api/auth/me` returns id + name from the token. Tested:
+`/me` without token → 401, with `Bearer {{login.response.body.token}}` → 200 `{ id: "1", name: "testuser" }`.
+- Parts 1–5 (2026-10-14): DTOs, `UserRepo`, `AuthService` (register rules, hashing, login,
+  `CreateToken` with NameIdentifier + Name claims, 2 h expiry), `AuthController`
+  (`POST /api/auth/register` → 201/400, `POST /api/auth/login` → 200 + token / 401), `Jwt`
+  section in `appsettings.json`. Tested via `AuctionApi.http`: register + login work.
+- Part 5 code (AuthService/AuthController/appsettings/.http) was written by Claude on Kalle's
+  request → walk through it with Kalle so they can explain it at the demo.
+
+**Next steps:**
+1. Commit, merge `backend-auth-jwt` → `backend` (`--no-ff`), push, delete the task branch
+   (`git push origin --delete backend-auth-jwt` first, then `git branch -d`).
+2. Walk through the Part 5/6 code with Kalle (token creation + validation) so they can explain it.
+3. **Step 4** on `backend-auctions`: auctions endpoints (create with `[Authorize]` + creator from
+   token claim, search open auctions by title, get one). First use of AutoMapper.
+
+**Last session recap (2026-10-10)** — greet Kalle with this at the start of the next session:
+- Registered the DbContext in `Program.cs`; installed the missing EF `Design` package.
+- Ran the first migration → database `AuctionDb` with Users/Auctions/Bids exists. Step 2 merged.
+- Step 3 started on `backend-auth-jwt`: Part 1 DTOs done (Register/Login/AuthResponse + validation).
+- Part 2 (UserRepo) started: `IUserRepo`/`UserRepo` files were created in a wrong top-level
+  `Data/` folder → fix: `mv Data/Interfaces Data/Repos backend/Data/` + `rmdir Data` (repo root).
+- Switched VS Code's terminal to Git Bash.
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
@@ -87,6 +103,7 @@ Source: assignment text, quoted in full at the bottom of this file.
 
 ### G (pass)
 - [ ] Create user (name, email, password) and log in. JWT authentication.
+      *(Backend done + tested 2026-10-14; React forms still to do.)*
 - [x] (Foundation) Data saved in SQL Server: `AuctionDb` with Users/Auctions/Bids (2026-10-10).
 - [ ] Logged-in user can create an auction: title, description, price, start date, end date, creator.
 - [ ] Auction is **open** if end date > current date and time.
@@ -236,6 +253,16 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **AutoMapper 16.1.1** (2026-10-09). *Why:* exact version in the lesson demo
   `DemoWebAPI_Automapper.csproj`. v15+ wants a license key; without one it only logs a warning
   at startup (the lesson runs it that way too). Expected, not an error.
+- **Rule errors via `BusinessRuleException`** (2026-10-14). Services throw it with a Swedish
+  user-facing message ("E-postadressen används redan", later "Budet är för lågt"); controllers
+  catch only that type → `400 BadRequest(message)`. *Why:* one consistent pattern for every rule;
+  real bugs (other exceptions) still surface as 500 instead of being hidden as 400.
+- **Passwords: `IPasswordHasher<User>` via DI** (2026-10-14). *Why:* built into ASP.NET Core
+  (salted PBKDF2), no extra package; DI keeps `AuthService` consistent with the lesson pattern.
+- **Direct reference `System.Security.Cryptography.Pkcs` 10.0.13** (2026-10-14). *Why:*
+  `EF SqlServer` → `Microsoft.Data.SqlClient` 6.1.6 pulled in 9.0.11 with known vulnerabilities
+  (NU1902/NU1903). A direct, newer reference overrides the transitive one. Can be removed once
+  SqlClient ships a fixed dependency (check with `dotnet list package --vulnerable --include-transitive`).
 - **CLAUDE.md stays in the repo** (2026-10-09). *Why:* the school allows AI, the old commit already
   contains it, and rewriting history isn't worth the risk. Grading is a live demo.
 

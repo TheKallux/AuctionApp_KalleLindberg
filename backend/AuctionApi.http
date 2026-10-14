@@ -1,3 +1,33 @@
 @AuctionApi_HostAddress = http://localhost:5139
 
+POST {{AuctionApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "testuser",
+  "email": "test@test.se",
+  "password": "test123"
+}
+
+###
+
+# @name login
+
+POST {{AuctionApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@test.se",
+  "password": "test123"
+}
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auth/me
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auth/me
+Authorization: Bearer {{login.response.body.token}}
+
 ###
