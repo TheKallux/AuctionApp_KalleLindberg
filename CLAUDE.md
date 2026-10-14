@@ -19,11 +19,17 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 
 **Step 3 in progress** on `backend-auth-jwt` (parts: 1 DTOs → 2 UserRepo → 3 AuthService/register
 → 4 AuthController + `.http` test → 5 JWT settings + token + login → 6 `Program.cs` auth + test):
-- Part 1 done: `Data/DTO/` `RegisterDto`, `LoginDto`, `AuthResponseDto` (builds). Cleanup left:
-  unused `using Microsoft.AspNetCore.Mvc.ModelBinding;` in Login/RegisterDto.
-- **Next: Part 2** — `Data/Interfaces/IUserRepo.cs` (GetByEmailAsync, EmailExistsAsync,
-  NameExistsAsync, AddAsync) + `Data/Repos/UserRepo.cs` (inject `AuctionDbContext _context`) +
-  `AddScoped<IUserRepo, UserRepo>()` in `Program.cs`. Steps were given; Kalle is writing them.
+- Parts 1–5 done (2026-10-14): DTOs, `UserRepo`, `AuthService` (register rules, hashing, login,
+  `CreateToken` with NameIdentifier + Name claims, 2 h expiry), `AuthController`
+  (`POST /api/auth/register` → 201/400, `POST /api/auth/login` → 200 + token / 401), `Jwt`
+  section in `appsettings.json`. Tested via `AuctionApi.http`: register + login work.
+- Part 5 code (AuthService/AuthController/appsettings/.http) was written by Claude on Kalle's
+  request → walk through it with Kalle so they can explain it at the demo.
+- **Next: Part 6** — `Program.cs`: `AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+  .AddJwtBearer(...)` with `TokenValidationParameters` (issuer, audience, lifetime, signing key
+  from config) + `app.UseAuthentication()` before `UseAuthorization()`. Test with a temporary
+  `[Authorize]` endpoint (401 without token, 200 with `Authorization: Bearer <token>`).
+  Then commit + merge `backend-auth-jwt` → `backend`.
 
 **Last session recap (2026-10-10)** — greet Kalle with this at the start of the next session:
 - Registered the DbContext in `Program.cs`; installed the missing EF `Design` package.

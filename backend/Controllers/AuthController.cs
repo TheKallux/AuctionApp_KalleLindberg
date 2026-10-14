@@ -29,4 +29,14 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginDto dto)
+    {
+        var result = await _service.LoginAsync(dto);
+        if (result == null)
+            return Unauthorized(new { message = "Fel e-post eller lösenord." });
+
+        return Ok(result);
+    }
 }

@@ -5,4 +5,5 @@ namespace AuctionApi.Core.Interfaces;
 public interface IAuthService
 {
     Task RegisterAsync(RegisterDto dto);
+    Task<AuthResponseDto?> LoginAsync(LoginDto dto);
 }
