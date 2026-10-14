@@ -15,17 +15,23 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 - Added the missing `Microsoft.EntityFrameworkCore.Design` 10.0.12 (wasn't installed in Step 1).
 - `main` is unchanged (merge `backend` → `main` after Step 5). API runs on `http://localhost:5139`.
 
-**Next steps:**
-1. Commit, merge `backend-entities-db` into `backend` (`--no-ff`), push, delete the task branch
-   (local + `git push origin --delete backend-entities-db`).
-2. **Step 3** on `backend-auth-jwt`: register + login + JWT → test with `AuctionApi.http`.
+- Step 2 merged into `backend` and pushed (2026-10-10).
 
-**Last session recap (2026-10-09)** — greet Kalle with this at the start of the next session:
-- Set up git workflow: `main` → `backend` → task branches with dashes (`backend-scaffold`).
-- Step 1: scaffolded the Web API (project, packages, connection string, CORS), tested, merged.
-- Learned what CORS is and why the API needs it.
-- Installed C# Dev Kit, turned off AI suggestions in VS Code, started a command cheat sheet.
-- Step 2 (half): wrote the `User`/`Auction`/`Bid` entities and `AuctionDbContext` with rules.
+**Step 3 in progress** on `backend-auth-jwt` (parts: 1 DTOs → 2 UserRepo → 3 AuthService/register
+→ 4 AuthController + `.http` test → 5 JWT settings + token + login → 6 `Program.cs` auth + test):
+- Part 1 done: `Data/DTO/` `RegisterDto`, `LoginDto`, `AuthResponseDto` (builds). Cleanup left:
+  unused `using Microsoft.AspNetCore.Mvc.ModelBinding;` in Login/RegisterDto.
+- **Next: Part 2** — `Data/Interfaces/IUserRepo.cs` (GetByEmailAsync, EmailExistsAsync,
+  NameExistsAsync, AddAsync) + `Data/Repos/UserRepo.cs` (inject `AuctionDbContext _context`) +
+  `AddScoped<IUserRepo, UserRepo>()` in `Program.cs`. Steps were given; Kalle is writing them.
+
+**Last session recap (2026-10-10)** — greet Kalle with this at the start of the next session:
+- Registered the DbContext in `Program.cs`; installed the missing EF `Design` package.
+- Ran the first migration → database `AuctionDb` with Users/Auctions/Bids exists. Step 2 merged.
+- Step 3 started on `backend-auth-jwt`: Part 1 DTOs done (Register/Login/AuthResponse + validation).
+- Part 2 (UserRepo) started: `IUserRepo`/`UserRepo` files were created in a wrong top-level
+  `Data/` folder → fix: `mv Data/Interfaces Data/Repos backend/Data/` + `rmdir Data` (repo root).
+- Switched VS Code's terminal to Git Bash.
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
