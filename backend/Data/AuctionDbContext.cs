@@ -7,7 +7,7 @@ public class AuctionDbContext : DbContext
 {
     public AuctionDbContext(DbContextOptions<AuctionDbContext> options) : base(options)
     {
-        
+
     }
 
     public DbSet<User> Users { get; set; }
@@ -29,6 +29,6 @@ public class AuctionDbContext : DbContext
             .WithMany(u => u.Bids)
             .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
     }
 }

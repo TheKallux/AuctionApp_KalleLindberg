@@ -242,6 +242,16 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **AutoMapper 16.1.1** (2026-10-09). *Why:* exact version in the lesson demo
   `DemoWebAPI_Automapper.csproj`. v15+ wants a license key; without one it only logs a warning
   at startup (the lesson runs it that way too). Expected, not an error.
+- **Rule errors via `BusinessRuleException`** (2026-10-14). Services throw it with a Swedish
+  user-facing message ("E-postadressen används redan", later "Budet är för lågt"); controllers
+  catch only that type → `400 BadRequest(message)`. *Why:* one consistent pattern for every rule;
+  real bugs (other exceptions) still surface as 500 instead of being hidden as 400.
+- **Passwords: `IPasswordHasher<User>` via DI** (2026-10-14). *Why:* built into ASP.NET Core
+  (salted PBKDF2), no extra package; DI keeps `AuthService` consistent with the lesson pattern.
+- **Direct reference `System.Security.Cryptography.Pkcs` 10.0.13** (2026-10-14). *Why:*
+  `EF SqlServer` → `Microsoft.Data.SqlClient` 6.1.6 pulled in 9.0.11 with known vulnerabilities
+  (NU1902/NU1903). A direct, newer reference overrides the transitive one. Can be removed once
+  SqlClient ships a fixed dependency (check with `dotnet list package --vulnerable --include-transitive`).
 - **CLAUDE.md stays in the repo** (2026-10-09). *Why:* the school allows AI, the old commit already
   contains it, and rewriting history isn't worth the risk. Grading is a live demo.
 

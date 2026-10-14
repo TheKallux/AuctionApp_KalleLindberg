@@ -2,6 +2,10 @@ using AuctionApi.Data;
 using Microsoft.EntityFrameworkCore;
 using AuctionApi.Data.Interfaces;
 using AuctionApi.Data.Repos;
+using AuctionApi.Core.Interfaces;
+using AuctionApi.Core.Services;
+using AuctionApi.Data.Entities;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,9 @@ builder.Services.AddDbContext<AuctionDbContext>(options =>
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddOpenApi();
 builder.Services.AddCors();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHasher<User>,
+PasswordHasher<User>>();
 
 var app = builder.Build();
 
