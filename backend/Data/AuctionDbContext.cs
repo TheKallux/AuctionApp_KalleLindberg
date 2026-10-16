@@ -1,5 +1,6 @@
 using AuctionApi.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using AuctionApi.Data.Converters;
 
 namespace AuctionApi.Data;
 
@@ -29,5 +30,10 @@ public class AuctionDbContext : DbContext
             .WithMany(u => u.Bids)
             .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
     }
 }
