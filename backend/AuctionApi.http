@@ -70,3 +70,63 @@ Content-Type: application/json
 }
 
 ###
+
+POST {{AuctionApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "budgivare",
+  "email": "bud@test.se",
+  "password": "test123"
+}
+
+###
+
+# @name login2
+POST {{AuctionApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "bud@test.se",
+  "password": "test123"
+}
+
+###
+
+POST {{AuctionApi_HostAddress}}/api/auctions/1/bids
+Content-Type: application/json
+Authorization: Bearer {{login2.response.body.token}}
+
+{
+  "amount": 50
+}
+
+###
+
+POST {{AuctionApi_HostAddress}}/api/auctions/1/bids
+Content-Type: application/json
+Authorization: Bearer {{login2.response.body.token}}
+
+{
+  "amount": 150
+}
+
+###
+
+POST {{AuctionApi_HostAddress}}/api/auctions/1/bids
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "amount": 200
+}
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auctions/1/bids
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auctions/999/bids
+
+###

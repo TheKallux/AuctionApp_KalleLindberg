@@ -19,6 +19,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddCors();
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
 
+
 builder.Services.AddDbContext<AuctionDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -27,6 +28,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuctionRepo, AuctionRepo>();
 builder.Services.AddScoped<IAuctionService, AuctionService>();
+builder.Services.AddScoped<IBidRepo, BidRepo>();
+builder.Services.AddScoped<IBidService, BidService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

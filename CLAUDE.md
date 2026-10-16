@@ -39,21 +39,33 @@ end > now), `AuctionsController` (`GET /api/auctions?title=`, `GET /api/auctions
 get one, POST without token 401). Token walkthrough given in chat; Kalle reviews code later.
 Confirmed the UTC todo: dates read from the DB come back without `Z`.
 
-**Next steps:**
-1. Commit + merge `backend-auctions` → `backend`, push, delete the branch.
-2. ~~UTC fix~~ done (2026-10-16) on `backend-utc-dates`: `Data/Converters/UtcDateTimeConverter.cs`
-   + `ConfigureConventions` in `AuctionDbContext` → all `DateTime` read as UTC; JSON dates end in `Z`
-   (tested). No migration needed.
-3. **Step 5** on `backend-bids`: `GET /api/auctions/{id}/bids` + `[Authorize] POST` with the bid
-   rules (open, not own auction, amount > max(highest bid, start price)).
-   After Step 5: merge `backend` → `main` (backend milestone).
+**UTC fix done (2026-10-16)** on `backend-utc-dates`: `Data/Converters/UtcDateTimeConverter.cs`
++ `ConfigureConventions` in `AuctionDbContext` → all `DateTime` read as UTC; JSON dates end in `Z`.
 
-**Last session recap (2026-10-14)** — greet Kalle with this at the start of the next session:
-- Finished Step 3: `UserRepo`, `AuthService` (register rules + password hashing), `AuthController`.
-- Register and login tested in the `.http` file; login returns a JWT.
-- API now validates tokens: `[Authorize] /api/auth/me` → 401 without token, 200 with.
-- Fixed a vulnerable package warning (Pkcs) and lots of unsaved-file / typo errors along the way.
-- Step 3 merged into `backend` and pushed. Progress ≈ 35% toward G.
+**Step 5 done (2026-10-16) → whole backend done.** On `backend-bids`: `CreateBidDto`/`BidDto`,
+`BidProfile`, `Auction.IsOpenAt(now)` (the one "open" rule, used by profile + service),
+`BidRepo` (bids highest first, loads bidder after save), `BidService` (rules: open → not own
+auction → amount > highest bid or start price, message shows the amount to beat),
+`BidsController` on `api/auctions/{auctionId:int}/bids` (GET, `[Authorize]` POST → 201).
+All `.http` tests passed: bid 50 → 400 too low, 150 → 201, creator bid → 400 own auction,
+list bids, `/999/bids` → 404, auction `highestBid` = 150. Test users: `testuser` (creator,
+id 1) and `budgivare` (bidder, id 2), see `AuctionApi.http`.
+
+**Next steps:**
+1. Commit + merge `backend-bids` → `backend`, push, delete the branch.
+2. **Backend milestone:** merge `backend` → `main` (`git switch main` → `git pull` →
+   `git merge --no-ff backend` → `git push`). Kalle runs it.
+3. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
+   and asks about anything unclear — they must be able to explain it at the demo.
+4. **Step 6:** branch `frontend` from `main`, then `frontend-scaffold`: Vite React-TS, React Router,
+   `AuthContext` + `AuthProvider`, `services/` for API calls, `types/`.
+
+**Last session recap (2026-10-16)** — greet Kalle with this at the start of the next session:
+- Moved the JWT key to user-secrets (new key) and tidied the code.
+- Step 4: auctions endpoints with AutoMapper — create, search open by title, get one. Tested.
+- Fixed dates so they always come back as UTC (`Z`).
+- Step 5: bids endpoints with all rules (open, not own auction, higher than current). Tested.
+- **The whole backend is done.** Progress ≈ 57% toward G. Next: merge to `main`, then frontend.
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
@@ -124,10 +136,11 @@ Source: assignment text, quoted in full at the bottom of this file.
       *(Backend done + tested 2026-10-16.)*
 - [ ] Auction is **open** if end date > current date and time. *(Backend: filter + `IsOpen`.)*
 - [ ] Search auctions by title. Only open auctions in search results. *(Backend done + tested.)*
-- [ ] Select an auction → see all its bids.
+- [ ] Select an auction → see all its bids. *(Backend done + tested 2026-10-16.)*
 - [ ] Place a bid (date + amount) if it's not your own auction. Must be higher than the current
-      highest bid, otherwise show a "bid too low" message.
+      highest bid, otherwise show a "bid too low" message. *(Backend rules done + tested.)*
 - [ ] Creator cannot bid on own auction, and the bid UI is **hidden** for them.
+      *(Backend blocks it; frontend must hide the form using `creatorId`.)*
 - [ ] All data fetched through Web API calls and shown in the browser.
 - [ ] Well-designed UI and clean code following lesson guidelines. Runs without errors.
 
