@@ -41,7 +41,9 @@ Confirmed the UTC todo: dates read from the DB come back without `Z`.
 
 **Next steps:**
 1. Commit + merge `backend-auctions` → `backend`, push, delete the branch.
-2. Fix the UTC todo (see "Known todos") — small, do it before or with Step 5.
+2. ~~UTC fix~~ done (2026-10-16) on `backend-utc-dates`: `Data/Converters/UtcDateTimeConverter.cs`
+   + `ConfigureConventions` in `AuctionDbContext` → all `DateTime` read as UTC; JSON dates end in `Z`
+   (tested). No migration needed.
 3. **Step 5** on `backend-bids`: `GET /api/auctions/{id}/bids` + `[Authorize] POST` with the bid
    rules (open, not own auction, amount > max(highest bid, start price)).
    After Step 5: merge `backend` → `main` (backend milestone).
@@ -246,12 +248,6 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 8. Design pass: consistent look, error/loading states, works on a phone-sized screen.
 9. Full run-through against the G checklist; fix anything that errors.
 
-## Known todos (fix before the frontend, Step 6)
-- **UTC on the way out:** EF reads `DateTime` back with `Kind = Unspecified`, so JSON has no `Z`
-  and the browser would treat it as local time. Fix: a `DateTime` value converter in
-  `OnModelCreating` (or `ConfigureConventions`) that marks read values as UTC. Check with
-  `GET /api/auctions` that dates end in `Z`.
-
 ## Open questions (VG only, decide when we get there)
 - Who may undo a bid: only the bidder who placed it? Assumption: yes.
 - Who may update an auction: only its creator (and admin?).
@@ -287,6 +283,9 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
   `29c9f00` → rotated (new key, old one is useless); history not rewritten. `appsettings.json`
   has `"Key": ""`. *Why:* secrets never go in git; rotation is the standard fix for a leak.
   On a new machine: `dotnet user-secrets set "Jwt:Key" "<openssl rand -base64 48>"` in `backend/`.
+- **All `DateTime` as UTC via a value converter** (2026-10-16). *Why:* SQL Server's `datetime2`
+  has no time zone; without the converter EF returns `Kind = Unspecified` and JSON drops the `Z`,
+  so the browser would show times 1–2 h off. One convention covers every date property.
 - **CLAUDE.md stays in the repo** (2026-10-09). *Why:* the school allows AI, the old commit already
   contains it, and rewriting history isn't worth the risk. Grading is a live demo.
 
