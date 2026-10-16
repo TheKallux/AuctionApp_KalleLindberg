@@ -6,12 +6,116 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 
 ## Status – PICK UP HERE
 
-**Where we are (2026-10-09):** Planning for G is done. Repo has only README + .gitignore + this
-file. No code yet. All machine-wide tools are installed (see "Prerequisites").
+**Where we are (2026-10-10):** Steps 1–2 done.
+- Step 2 on `backend-entities-db`: entities `User`, `Auction`, `Bid` (`Data/Entities/`),
+  `Data/AuctionDbContext.cs` (DbSets + rules in `OnModelCreating`), registered with
+  `AddDbContext` in `Program.cs`, migration `InitialCreate` in `backend/Migrations/`.
+- Database `AuctionDb` exists in LocalDB. Verified with sqlcmd: tables `Users`, `Auctions`, `Bids`
+  + `__EFMigrationsHistory`. Migration checked: unique Email/Name, decimal(18,2), Bid→User Restrict.
+- Added the missing `Microsoft.EntityFrameworkCore.Design` 10.0.12 (wasn't installed in Step 1).
+- `main` is unchanged (merge `backend` → `main` after Step 5). API runs on `http://localhost:5139`.
+
+- Step 2 merged into `backend` and pushed (2026-10-10).
+
+**Step 3 done (2026-10-14)** on `backend-auth-jwt` — all 6 parts. Part 6: `AddAuthentication`
++ `AddJwtBearer` (validates issuer, audience, lifetime, signing key) and `UseAuthentication()` in
+`Program.cs`; `[Authorize] GET /api/auth/me` returns id + name from the token. Tested:
+`/me` without token → 401, with `Bearer {{login.response.body.token}}` → 200 `{ id: "1", name: "testuser" }`.
+- Parts 1–5 (2026-10-14): DTOs, `UserRepo`, `AuthService` (register rules, hashing, login,
+  `CreateToken` with NameIdentifier + Name claims, 2 h expiry), `AuthController`
+  (`POST /api/auth/register` → 201/400, `POST /api/auth/login` → 200 + token / 401), `Jwt`
+  section in `appsettings.json`. Tested via `AuctionApi.http`: register + login work.
+- Part 5 code (AuthService/AuthController/appsettings/.http) was written by Claude on Kalle's
+  request → walk through it with Kalle so they can explain it at the demo.
+
+**Full backend review (2026-10-14):** builds 0/0, no vulnerable packages, no pending model changes.
+**Cleanup done (2026-10-16)** on `backend-cleanup`, merged into `backend` + pushed: JWT key moved
+to user-secrets (rotated, login + `/me` retested OK), file rename, `Program.cs` grouped, tidy-ups.
+**Step 4 done (2026-10-16)** on `backend-auctions`: `CreateAuctionDto`/`AuctionDto`,
+`Data/Profiles/AuctionProfile.cs` (AutoMapper; `IsOpen` + `HighestBid` computed), `AuctionRepo`
+(`Include` User + Bids, open filter, title `Contains`), `AuctionService` (dates → UTC, end > start,
+end > now), `AuctionsController` (`GET /api/auctions?title=`, `GET /api/auctions/{id:int}`,
+`[Authorize] POST /api/auctions` → 201). All 6 `.http` tests passed (create 201, list, search,
+get one, POST without token 401). Token walkthrough given in chat; Kalle reviews code later.
+Confirmed the UTC todo: dates read from the DB come back without `Z`.
+
+**UTC fix done (2026-10-16)** on `backend-utc-dates`: `Data/Converters/UtcDateTimeConverter.cs`
++ `ConfigureConventions` in `AuctionDbContext` → all `DateTime` read as UTC; JSON dates end in `Z`.
+
+**Step 5 done (2026-10-16) → whole backend done.** On `backend-bids`: `CreateBidDto`/`BidDto`,
+`BidProfile`, `Auction.IsOpenAt(now)` (the one "open" rule, used by profile + service),
+`BidRepo` (bids highest first, loads bidder after save), `BidService` (rules: open → not own
+auction → amount > highest bid or start price, message shows the amount to beat),
+`BidsController` on `api/auctions/{auctionId:int}/bids` (GET, `[Authorize]` POST → 201).
+All `.http` tests passed: bid 50 → 400 too low, 150 → 201, creator bid → 400 own auction,
+list bids, `/999/bids` → 404, auction `highestBid` = 150. Test users: `testuser` (creator,
+id 1) and `budgivare` (bidder, id 2), see `AuctionApi.http`.
 
 **Next steps:**
-1. Start **Step 1** of "Technical plan (G) → Build order" below: scaffold the backend.
-2. Work through the build order one step at a time; tick off the G checklist as features work.
+1. Commit + merge `backend-bids` → `backend`, push, delete the branch.
+2. **Backend milestone:** merge `backend` → `main` (`git switch main` → `git pull` →
+   `git merge --no-ff backend` → `git push`). Kalle runs it.
+3. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
+   and asks about anything unclear — they must be able to explain it at the demo.
+4. **Step 6:** branch `frontend` from `main`, then `frontend-scaffold`: Vite React-TS, React Router,
+   `AuthContext` + `AuthProvider`, `services/` for API calls, `types/`.
+
+**Last session recap (2026-10-16)** — greet Kalle with this at the start of the next session:
+- Moved the JWT key to user-secrets (new key) and tidied the code.
+- Step 4: auctions endpoints with AutoMapper — create, search open by title, get one. Tested.
+- Fixed dates so they always come back as UTC (`Z`).
+- Step 5: bids endpoints with all rules (open, not own auction, higher than current). Tested.
+- **The whole backend is done.** Progress ≈ 57% toward G. Next: merge to `main`, then frontend.
+
+**Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
+line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
+the Git Bash profile.
+
+## Git workflow (Kalle, 2026-10-09)
+Kalle runs all git commands. No pull requests; merges are done locally.
+```
+main                     ← finished, runnable versions only
+├── backend              ← collects finished backend tasks
+│   ├── backend-scaffold   (one short branch per task / build step)
+│   └── backend-auth-jwt ...
+└── frontend             ← created from main AFTER backend is merged in
+    └── frontend-scaffold ...
+```
+- Task branch: create from its area branch, commit small, merge back into the area branch, delete.
+- Area branch → `main` when a milestone works (e.g. backend steps 1–5 done and tested).
+- `frontend` is branched from `main` once the backend is merged, so the API code is on disk to run against.
+- Merge with `git merge --no-ff <branch>` so each task shows up as its own merge commit in history.
+- Task branches use a **dash**, not a slash (`backend-scaffold`, not `backend/scaffold`): Git can't
+  have both a branch `backend` and `backend/...` (see Learning notes).
+
+## Command cheat sheet (grows as we use new commands)
+Pattern: `tool verb [what] [options]`. Stuck? `<tool> <verb> --help`. Git Bash: ↑ = history,
+Ctrl+R = search history, Tab = complete names.
+
+| Situation | Command |
+|---|---|
+| Where am I / what changed? | `git status` · `git branch -a` · `git log --oneline -5` |
+| Start a task | `git switch backend` → `git pull` → `git switch -c backend-<task>` |
+| Save work | `git add -A` (whole repo; `.` = current folder only) → `git commit -m "..."` |
+| First push of a new branch | `git push -u origin <branch>` (after that: `git push`) |
+| Finish a task | `git switch backend` → `git merge --no-ff backend-<task>` → `git push` → `git branch -d backend-<task>` |
+| Create folder(s) | `mkdir -p backend/Data/Entities` (`-p` = also parents, no error if exists) |
+| Create empty files | `touch backend/Data/Entities/{User,Auction,Bid}.cs` (`{a,b}` = several at once) |
+| List files | `ls <folder>` |
+| Open in VS Code | `code .` (whole folder) · `code <file>` |
+| Vim (e.g. merge message) | save + quit: `:wq` + Enter |
+| New .NET project | `dotnet new webapi --use-controllers -o <folder> -n <Name>` |
+| Add a NuGet package | `dotnet add package <Name> [--version x.y.z]` (inside the project folder) |
+| Create a migration (DB untouched) | `dotnet ef migrations add <Name>` (needs `EntityFrameworkCore.Design`) |
+| Apply migrations to the DB | `dotnet ef database update` |
+| Undo the last (unapplied) migration | `dotnet ef migrations remove` |
+| List tables in the DB | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d AuctionDb -Q "SELECT name FROM sys.tables"` |
+| Where am I? | `pwd` · `ls` (a `.csproj` must be here for `dotnet` commands) · `cd ..` = up one |
+| Store a secret (outside git) | `dotnet user-secrets set "Jwt:Key" "<value>"` · list: `dotnet user-secrets list` |
+| Generate a random key | `openssl rand -base64 48` |
+| Rename / move a file | `mv <old> <new>` |
+| Does it compile? | `dotnet build` |
+| Run the API | `dotnet run` (stop: Ctrl+C) |
 
 ## How we work (Kalle, 2026-10-09)
 - **Kalle writes all the code.** Claude is a guide: explains what to build next, why, and how the
@@ -26,13 +130,17 @@ Source: assignment text, quoted in full at the bottom of this file.
 
 ### G (pass)
 - [ ] Create user (name, email, password) and log in. JWT authentication.
+      *(Backend done + tested 2026-10-14; React forms still to do.)*
+- [x] (Foundation) Data saved in SQL Server: `AuctionDb` with Users/Auctions/Bids (2026-10-10).
 - [ ] Logged-in user can create an auction: title, description, price, start date, end date, creator.
-- [ ] Auction is **open** if end date > current date and time.
-- [ ] Search auctions by title. Only open auctions in search results.
-- [ ] Select an auction → see all its bids.
+      *(Backend done + tested 2026-10-16.)*
+- [ ] Auction is **open** if end date > current date and time. *(Backend: filter + `IsOpen`.)*
+- [ ] Search auctions by title. Only open auctions in search results. *(Backend done + tested.)*
+- [ ] Select an auction → see all its bids. *(Backend done + tested 2026-10-16.)*
 - [ ] Place a bid (date + amount) if it's not your own auction. Must be higher than the current
-      highest bid, otherwise show a "bid too low" message.
+      highest bid, otherwise show a "bid too low" message. *(Backend rules done + tested.)*
 - [ ] Creator cannot bid on own auction, and the bid UI is **hidden** for them.
+      *(Backend blocks it; frontend must hide the form using `creatorId`.)*
 - [ ] All data fetched through Web API calls and shown in the browser.
 - [ ] Well-designed UI and clean code following lesson guidelines. Runs without errors.
 
@@ -102,7 +210,7 @@ Never copy its code, CSS, texts or visual design.** Write everything from scratc
 
 **Downloaded per project during scaffolding (not yet):**
 - Backend (NuGet): `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Design`,
-  `Microsoft.AspNetCore.Authentication.JwtBearer`, `AutoMapper`.
+  `Microsoft.AspNetCore.Authentication.JwtBearer`, `AutoMapper` **16.1.1** (same as lesson demo).
   Passwords hashed with ASP.NET Core's built-in `PasswordHasher<T>` (no extra package).
 - Frontend (npm): Vite React-TS template (`react`, `react-dom`, `typescript`, `vite`) + `react-router-dom`.
 
@@ -168,6 +276,29 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **First bid must be higher than the start price** (2026-10-09). *Why:* otherwise the price means nothing.
 - **Open = StartDate ≤ now < EndDate** (2026-10-09). *Why:* an auction that hasn't started shouldn't
   be searchable or take bids. The assignment only defines the end date, so this is our interpretation.
+- **Branches: `main` → `backend`/`frontend` → one task branch per step, no PRs** (2026-10-09).
+  *Why:* Kalle wants a clear split by area and small, isolated tasks; solo project, so local
+  merges are enough. Long-lived area branches can drift, so merge to `main` at each milestone.
+- **AutoMapper 16.1.1** (2026-10-09). *Why:* exact version in the lesson demo
+  `DemoWebAPI_Automapper.csproj`. v15+ wants a license key; without one it only logs a warning
+  at startup (the lesson runs it that way too). Expected, not an error.
+- **Rule errors via `BusinessRuleException`** (2026-10-14). Services throw it with a Swedish
+  user-facing message ("E-postadressen används redan", later "Budet är för lågt"); controllers
+  catch only that type → `400 BadRequest(message)`. *Why:* one consistent pattern for every rule;
+  real bugs (other exceptions) still surface as 500 instead of being hidden as 400.
+- **Passwords: `IPasswordHasher<User>` via DI** (2026-10-14). *Why:* built into ASP.NET Core
+  (salted PBKDF2), no extra package; DI keeps `AuthService` consistent with the lesson pattern.
+- **Direct reference `System.Security.Cryptography.Pkcs` 10.0.13** (2026-10-14). *Why:*
+  `EF SqlServer` → `Microsoft.Data.SqlClient` 6.1.6 pulled in 9.0.11 with known vulnerabilities
+  (NU1902/NU1903). A direct, newer reference overrides the transitive one. Can be removed once
+  SqlClient ships a fixed dependency (check with `dotnet list package --vulnerable --include-transitive`).
+- **JWT key in user-secrets, not `appsettings.json`** (2026-10-16). The first key was pushed in
+  `29c9f00` → rotated (new key, old one is useless); history not rewritten. `appsettings.json`
+  has `"Key": ""`. *Why:* secrets never go in git; rotation is the standard fix for a leak.
+  On a new machine: `dotnet user-secrets set "Jwt:Key" "<openssl rand -base64 48>"` in `backend/`.
+- **All `DateTime` as UTC via a value converter** (2026-10-16). *Why:* SQL Server's `datetime2`
+  has no time zone; without the converter EF returns `Kind = Unspecified` and JSON drops the `Z`,
+  so the browser would show times 1–2 h off. One convention covers every date property.
 - **CLAUDE.md stays in the repo** (2026-10-09). *Why:* the school allows AI, the old commit already
   contains it, and rewriting history isn't worth the risk. Grading is a live demo.
 
@@ -178,6 +309,8 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **JWT (JSON Web Token):** signed token the API issues at login; the client sends it in the
   `Authorization: Bearer <token>` header to prove who it is.
 - **EF Core:** ORM that maps C# classes to SQL Server tables; migrations create/update the schema.
+- **CORS (Cross-Origin Resource Sharing):** browser rule; a page may only read responses from
+  another origin (protocol + host + port) if that server sends `Access-Control-Allow-Origin`.
 - **Context API:** React's built-in way to share state (e.g. logged-in user) without passing props down.
 
 ## Learning notes (question → answer → why)
@@ -190,6 +323,31 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 - **How do I stop git tracking a file that's already committed?** → Add it to `.gitignore`, then
   run `git rm --cached <file>` and commit. *Why:* `.gitignore` only affects untracked files;
   `--cached` removes the file from git's index but keeps it on disk. Old commits still contain it.
+- **Why does the API need CORS?** → React (`localhost:5173`) and the API (`localhost:5xxx`) are
+  different origins; the browser blocks the response unless the API allows it via `UseCors`.
+  *Why:* Same-Origin Policy protects users' browsers. Only browsers enforce it, so `.http`
+  files/Postman work without CORS. It doesn't secure the API — JWT does that.
+- **What's the difference between `UserId` and `User` on an entity?** → `UserId` (int) is the
+  foreign key column; `User` is a navigation property (no column) that EF fills in.
+  *Why:* EF links `XId` + `X` by naming convention; you set only the id when saving.
+- **Why does `string` need `= string.Empty` but `int Id` doesn't?** → `int` is a value type
+  (default 0, never null); `string`/classes/lists are reference types (default null).
+  *Why:* nullable checks warn about possible nulls; use `string.Empty`, `new()` or `null!` (EF fills it).
+- **Why `HasMaxLength` before a unique index?** → SQL Server can't index `nvarchar(max)`.
+  *Why:* strings without a length become `nvarchar(max)` by default.
+- **Why `OnDelete(Restrict)` on Bid → User?** → User→Bid and User→Auction→Bid are two cascade
+  paths; SQL Server refuses that. *Why:* it can't decide which delete path wins.
+- **What is a migration?** → Generated C# (`Up()` = apply, `Down()` = undo) describing schema
+  changes. `migrations add` creates it; `database update` runs it. *Why:* two steps so you can
+  read it first; the DB's history lives in git with the code. `__EFMigrationsHistory` tracks
+  which migrations have run.
+- **"dotnet ef … doesn't reference Microsoft.EntityFrameworkCore.Design"?** → Install that package
+  (same version as the other EF packages). *Why:* the EF tool needs it to load the DbContext.
+- **`git add .` didn't include CLAUDE.md?** → `.` = current folder only; I was in `backend/`.
+  *Why:* use `git add -A` for the whole repo, and `git status` before switching branches.
+- **Why did `git switch -c backend/scaffold` fail with "cannot lock ref"?** → A branch `backend`
+  already existed. *Why:* Git stores each branch as a file in `.git/refs/heads/`; `backend` is a
+  file, so Git can't also make a folder `backend/` for `scaffold`. Fix: name it `backend-scaffold`.
 
 ## Original assignment text (Swedish, verbatim)
 
