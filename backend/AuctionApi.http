@@ -31,3 +31,42 @@ GET {{AuctionApi_HostAddress}}/api/auth/me
 Authorization: Bearer {{login.response.body.token}}
 
 ###
+
+POST {{AuctionApi_HostAddress}}/api/auctions
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "title": "Gammal cykel",
+  "description": "Blå, 3 växlar, lite rost.",
+  "startPrice": 100,
+  "startDate": "2026-10-16T00:00:00Z",
+  "endDate": "2026-10-30T18:00:00Z"
+}
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auctions
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auctions?title=cykel
+
+###
+
+GET {{AuctionApi_HostAddress}}/api/auctions/1
+
+###
+
+POST {{AuctionApi_HostAddress}}/api/auctions
+Content-Type: application/json
+
+{
+  "title": "Utan token",
+  "description": "Ska ge 401",
+  "startPrice": 10,
+  "startDate": "2026-10-16T00:00:00Z",
+  "endDate": "2026-10-30T18:00:00Z"
+}
+
+###
