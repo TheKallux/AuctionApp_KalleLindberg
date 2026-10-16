@@ -29,15 +29,11 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
   request → walk through it with Kalle so they can explain it at the demo.
 
 **Full backend review (2026-10-14):** builds 0/0, no vulnerable packages, no pending model changes.
+**Cleanup done (2026-10-16)** on `backend-cleanup`, merged into `backend` + pushed: JWT key moved
+to user-secrets (rotated, login + `/me` retested OK), file rename, `Program.cs` grouped, tidy-ups.
 **Next steps:**
-1. On a new branch `backend-cleanup`: **move the JWT key out of git** (it was pushed in `29c9f00`):
-   `dotnet user-secrets init` → `dotnet user-secrets set "Jwt:Key" "<new key from openssl>"` →
-   placeholder in `appsettings.json`. New key, because the old one stays in git history.
-   Then cleanup: rename `BusinessRuleExceptions.cs` → `BusinessRuleException.cs`; tidy `Program.cs`
-   (sort usings, group `AddScoped`, one-line PasswordHasher); join split lambdas in `UserRepo.cs`;
-   remove stray blank lines (User.cs, Auction.cs, RegisterDto.cs, AuctionDbContext.cs).
-2. Walk through the Part 5/6 code with Kalle (token creation + validation) so they can explain it.
-3. **Step 4** on `backend-auctions`: auctions endpoints (create with `[Authorize]` + creator from
+1. Walk through the Part 5/6 code with Kalle (token creation + validation) so they can explain it.
+2. **Step 4** on `backend-auctions`: auctions endpoints (create with `[Authorize]` + creator from
    token claim, search open auctions by title, get one). First use of AutoMapper.
 
 **Last session recap (2026-10-14)** — greet Kalle with this at the start of the next session:
