@@ -60,14 +60,21 @@ id 1) and `budgivare` (bidder, id 2), see `AuctionApi.http`.
 (no `package.json`) and landed in `C:\Users\kalle\package.json`. Clean-up (Kalle):
 `npm uninstall react-router-dom --prefix ~`. The `next` entry there is older and not ours — leave it.
 
+**Step 6 done (2026-10-17)** on `frontend-scaffold`: demo removed; `src/types/` (auction, bid,
+auth); `src/services/api.ts` (`request<T>`: base URL, Bearer header, throws `Error` with the
+backend `message` or first validation error, handles empty bodies) + `authService`,
+`auctionService`, `bidService`; `src/contexts/AuthContext.ts` (context + `useAuth`) and
+`AuthProvider.tsx` (user + token in `localStorage`, drops expired tokens via the JWT `exp`);
+`App.tsx` with `BrowserRouter` routes, `components/Navbar`, `components/RequireAuth`, placeholder
+pages in `pages/<Name>/<Name>.tsx`. Builds; navigation + redirect to /login tested.
+
 **Next steps:**
-1. Commit Part 1 (if not done): `git add -A` → `git commit -m "Scaffold frontend ..."`.
-2. Step 6 Part 2: remove the Vite demo content, create `components/`, `contexts/`, `services/`,
-   `types/`; write `types/` (Auction, Bid, AuthResponse) + an own API helper in `services/`
-   (base URL `http://localhost:5139/api`, adds `Authorization: Bearer`, throws on non-OK —
-   written from scratch, not copied from the classmate).
-3. Part 3: `AuthContext` + `AuthProvider`. Part 4: router + empty pages + navbar.
-4. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
+1. Merge `frontend-scaffold` → `frontend`, push, delete the branch.
+2. **Step 7** on `frontend-pages`: Register + Login (auto-login after register) → HomePage
+   (list + search) → AuctionPage (details, bids, bid form hidden for creator/logged out) →
+   CreateAuctionPage. Run backend (`dotnet run` in `backend/`) and frontend (`npm run dev` in
+   `frontend/`) in two terminals.
+3. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
    and asks about anything unclear — they must be able to explain it at the demo.
 
 **Last session recap (2026-10-16)** — greet Kalle with this at the start of the next session:
