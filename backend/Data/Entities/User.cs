@@ -8,5 +8,4 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public List<Auction> Auctions { get; set; } = new();
     public List<Bid> Bids { get; set; } = new();
-    
 }

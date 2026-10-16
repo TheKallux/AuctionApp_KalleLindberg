@@ -29,6 +29,5 @@ public class AuctionDbContext : DbContext
             .WithMany(u => u.Bids)
             .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-
     }
 }
