@@ -51,21 +51,32 @@ All `.http` tests passed: bid 50 → 400 too low, 150 → 201, creator bid → 4
 list bids, `/999/bids` → 404, auction `highestBid` = 150. Test users: `testuser` (creator,
 id 1) and `budgivare` (bidder, id 2), see `AuctionApi.http`.
 
+**Backend merged into `main` (2026-10-16).** Branch `frontend` created from `main` + pushed.
+
+**Step 6 Part 1 done (2026-10-17)** on `frontend-scaffold`: `frontend/` created with
+`npm create vite@latest frontend -- --template react-ts` (ESLint), `npm install`,
+`react-router-dom` installed; `npm run dev` shows the Vite page on `http://localhost:5173`.
+⚠️ Leftover outside the project: the first `npm install react-router-dom` ran in the repo root
+(no `package.json`) and landed in `C:\Users\kalle\package.json`. Clean-up (Kalle):
+`npm uninstall react-router-dom --prefix ~`. The `next` entry there is older and not ours — leave it.
+
 **Next steps:**
-1. Commit + merge `backend-bids` → `backend`, push, delete the branch.
-2. **Backend milestone:** merge `backend` → `main` (`git switch main` → `git pull` →
-   `git merge --no-ff backend` → `git push`). Kalle runs it.
-3. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
+1. Commit Part 1 (if not done): `git add -A` → `git commit -m "Scaffold frontend ..."`.
+2. Step 6 Part 2: remove the Vite demo content, create `components/`, `contexts/`, `services/`,
+   `types/`; write `types/` (Auction, Bid, AuthResponse) + an own API helper in `services/`
+   (base URL `http://localhost:5139/api`, adds `Authorization: Bearer`, throws on non-OK —
+   written from scratch, not copied from the classmate).
+3. Part 3: `AuthContext` + `AuthProvider`. Part 4: router + empty pages + navbar.
+4. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
    and asks about anything unclear — they must be able to explain it at the demo.
-4. **Step 6:** branch `frontend` from `main`, then `frontend-scaffold`: Vite React-TS, React Router,
-   `AuthContext` + `AuthProvider`, `services/` for API calls, `types/`.
 
 **Last session recap (2026-10-16)** — greet Kalle with this at the start of the next session:
 - Moved the JWT key to user-secrets (new key) and tidied the code.
 - Step 4: auctions endpoints with AutoMapper — create, search open by title, get one. Tested.
 - Fixed dates so they always come back as UTC (`Z`).
 - Step 5: bids endpoints with all rules (open, not own auction, higher than current). Tested.
-- **The whole backend is done.** Progress ≈ 57% toward G. Next: merge to `main`, then frontend.
+- **The whole backend is done** and merged into `main`. Progress ≈ 57% toward G.
+- Started the frontend: Vite React-TS project runs on `localhost:5173` (branch `frontend-scaffold`).
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
@@ -104,6 +115,8 @@ Ctrl+R = search history, Tab = complete names.
 | List files | `ls <folder>` |
 | Open in VS Code | `code .` (whole folder) · `code <file>` |
 | Vim (e.g. merge message) | save + quit: `:wq` + Enter |
+| Merge without opening an editor | `git merge --no-ff <branch> --no-edit` |
+| Stuck in `MERGING` (editor closed) | `git commit --no-edit` → `git push` |
 | New .NET project | `dotnet new webapi --use-controllers -o <folder> -n <Name>` |
 | Add a NuGet package | `dotnet add package <Name> [--version x.y.z]` (inside the project folder) |
 | Create a migration (DB untouched) | `dotnet ef migrations add <Name>` (needs `EntityFrameworkCore.Design`) |
@@ -343,6 +356,10 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
   which migrations have run.
 - **"dotnet ef … doesn't reference Microsoft.EntityFrameworkCore.Design"?** → Install that package
   (same version as the other EF packages). *Why:* the EF tool needs it to load the DbContext.
+- **Why did `npm install` end up in my user folder?** → There was no `package.json` in the
+  current folder, so npm searched upwards and used `C:\Users\kalle\package.json`.
+  *Why:* npm works on the nearest `package.json` above you. Always `cd frontend` first (`ls`
+  must show `package.json`).
 - **`git add .` didn't include CLAUDE.md?** → `.` = current folder only; I was in `backend/`.
   *Why:* use `git add -A` for the whole repo, and `git status` before switching branches.
 - **Why did `git switch -c backend/scaffold` fail with "cannot lock ref"?** → A branch `backend`
