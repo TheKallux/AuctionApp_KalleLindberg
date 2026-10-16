@@ -28,20 +28,24 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 - Part 5 code (AuthService/AuthController/appsettings/.http) was written by Claude on Kalle's
   request → walk through it with Kalle so they can explain it at the demo.
 
+**Full backend review (2026-10-14):** builds 0/0, no vulnerable packages, no pending model changes.
 **Next steps:**
-1. Commit, merge `backend-auth-jwt` → `backend` (`--no-ff`), push, delete the task branch
-   (`git push origin --delete backend-auth-jwt` first, then `git branch -d`).
+1. On a new branch `backend-cleanup`: **move the JWT key out of git** (it was pushed in `29c9f00`):
+   `dotnet user-secrets init` → `dotnet user-secrets set "Jwt:Key" "<new key from openssl>"` →
+   placeholder in `appsettings.json`. New key, because the old one stays in git history.
+   Then cleanup: rename `BusinessRuleExceptions.cs` → `BusinessRuleException.cs`; tidy `Program.cs`
+   (sort usings, group `AddScoped`, one-line PasswordHasher); join split lambdas in `UserRepo.cs`;
+   remove stray blank lines (User.cs, Auction.cs, RegisterDto.cs, AuctionDbContext.cs).
 2. Walk through the Part 5/6 code with Kalle (token creation + validation) so they can explain it.
 3. **Step 4** on `backend-auctions`: auctions endpoints (create with `[Authorize]` + creator from
    token claim, search open auctions by title, get one). First use of AutoMapper.
 
-**Last session recap (2026-10-10)** — greet Kalle with this at the start of the next session:
-- Registered the DbContext in `Program.cs`; installed the missing EF `Design` package.
-- Ran the first migration → database `AuctionDb` with Users/Auctions/Bids exists. Step 2 merged.
-- Step 3 started on `backend-auth-jwt`: Part 1 DTOs done (Register/Login/AuthResponse + validation).
-- Part 2 (UserRepo) started: `IUserRepo`/`UserRepo` files were created in a wrong top-level
-  `Data/` folder → fix: `mv Data/Interfaces Data/Repos backend/Data/` + `rmdir Data` (repo root).
-- Switched VS Code's terminal to Git Bash.
+**Last session recap (2026-10-14)** — greet Kalle with this at the start of the next session:
+- Finished Step 3: `UserRepo`, `AuthService` (register rules + password hashing), `AuthController`.
+- Register and login tested in the `.http` file; login returns a JWT.
+- API now validates tokens: `[Authorize] /api/auth/me` → 401 without token, 200 with.
+- Fixed a vulnerable package warning (Pkcs) and lots of unsaved-file / typo errors along the way.
+- Step 3 merged into `backend` and pushed. Progress ≈ 35% toward G.
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
