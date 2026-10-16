@@ -6,7 +6,12 @@ export async function request<T>(path: string, options: RequestInit = {}, token?
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+    let response: Response;
+    try {
+    response = await fetch(`${API_URL}${path}`, { ...options, headers });
+    } catch {
+    throw new Error("Kunde inte nå servern. Försök igen senare.");
+    }
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response));
@@ -24,5 +29,8 @@ async function getErrorMessage(response: Response): Promise<string> {
   } catch {
     // svaret var inte JSON
   }
+
+  if (response.status === 404) return "Det du letar efter finns inte.";
+  
   return `Något gick fel (${response.status})`;
 }
