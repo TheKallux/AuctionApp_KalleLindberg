@@ -11,6 +11,5 @@ public class Auction
     public int UserId { get; set; }
     public User User { get; set; } = null!;
     public List<Bid> Bids { get; set; } = new();
-
 }
 

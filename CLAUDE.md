@@ -91,6 +91,9 @@ Ctrl+R = search history, Tab = complete names.
 | Undo the last (unapplied) migration | `dotnet ef migrations remove` |
 | List tables in the DB | `sqlcmd -S "(localdb)\MSSQLLocalDB" -d AuctionDb -Q "SELECT name FROM sys.tables"` |
 | Where am I? | `pwd` · `ls` (a `.csproj` must be here for `dotnet` commands) · `cd ..` = up one |
+| Store a secret (outside git) | `dotnet user-secrets set "Jwt:Key" "<value>"` · list: `dotnet user-secrets list` |
+| Generate a random key | `openssl rand -base64 48` |
+| Rename / move a file | `mv <old> <new>` |
 | Does it compile? | `dotnet build` |
 | Run the API | `dotnet run` (stop: Ctrl+C) |
 
@@ -267,6 +270,10 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
   `EF SqlServer` → `Microsoft.Data.SqlClient` 6.1.6 pulled in 9.0.11 with known vulnerabilities
   (NU1902/NU1903). A direct, newer reference overrides the transitive one. Can be removed once
   SqlClient ships a fixed dependency (check with `dotnet list package --vulnerable --include-transitive`).
+- **JWT key in user-secrets, not `appsettings.json`** (2026-10-16). The first key was pushed in
+  `29c9f00` → rotated (new key, old one is useless); history not rewritten. `appsettings.json`
+  has `"Key": ""`. *Why:* secrets never go in git; rotation is the standard fix for a leak.
+  On a new machine: `dotnet user-secrets set "Jwt:Key" "<openssl rand -base64 48>"` in `backend/`.
 - **CLAUDE.md stays in the repo** (2026-10-09). *Why:* the school allows AI, the old commit already
   contains it, and rewriting history isn't worth the risk. Grading is a live demo.
 
