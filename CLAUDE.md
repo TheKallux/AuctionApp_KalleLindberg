@@ -68,13 +68,23 @@ backend `message` or first validation error, handles empty bodies) + `authServic
 `App.tsx` with `BrowserRouter` routes, `components/Navbar`, `components/RequireAuth`, placeholder
 pages in `pages/<Name>/<Name>.tsx`. Builds; navigation + redirect to /login tested.
 
+**Step 7 done (2026-10-17)** on `frontend-pages` — all pages work in the browser, tested by Kalle:
+- `RegisterPage` (auto-login after register), `LoginPage` (errors shown in the page).
+- `HomePage`: open auctions, search by title, loading/error/empty states.
+- `AuctionPage`: details, bids (highest first), bid form only when logged in + not creator + open;
+  creator sees "Det här är din auktion"; "too low" message from the backend shown in the form.
+- `CreateAuctionPage` (behind `RequireAuth`): `datetime-local` → `toISOString()` (UTC), end > start
+  checked in browser + backend, navigates to the new auction.
+- `src/utils/format.ts` (`formatDate`, `formatPrice`, sv-SE); `api.ts` gives Swedish messages
+  for "server unreachable" and 404.
+- Run: backend `dotnet run` in `backend/` + frontend `npm run dev` in `frontend/` (two terminals).
+
 **Next steps:**
-1. Merge `frontend-scaffold` → `frontend`, push, delete the branch.
-2. **Step 7** on `frontend-pages`: Register + Login (auto-login after register) → HomePage
-   (list + search) → AuctionPage (details, bids, bid form hidden for creator/logged out) →
-   CreateAuctionPage. Run backend (`dotnet run` in `backend/`) and frontend (`npm run dev` in
-   `frontend/`) in two terminals.
-3. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
+1. Merge `frontend-pages` → `frontend`, push, delete the branch.
+2. **Step 8 – design pass** on `frontend-design`: own CSS (no copying), consistent look, spacing,
+   navbar, forms, auction cards, error/loading styles, works on a phone-sized screen.
+3. **Step 9** – full run-through against the G checklist; then merge `frontend` → `main`.
+4. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
    and asks about anything unclear — they must be able to explain it at the demo.
 
 **Last session recap (2026-10-16)** — greet Kalle with this at the start of the next session:
@@ -82,8 +92,10 @@ pages in `pages/<Name>/<Name>.tsx`. Builds; navigation + redirect to /login test
 - Step 4: auctions endpoints with AutoMapper — create, search open by title, get one. Tested.
 - Fixed dates so they always come back as UTC (`Z`).
 - Step 5: bids endpoints with all rules (open, not own auction, higher than current). Tested.
-- **The whole backend is done** and merged into `main`. Progress ≈ 57% toward G.
-- Started the frontend: Vite React-TS project runs on `localhost:5173` (branch `frontend-scaffold`).
+- **The whole backend is done** and merged into `main`.
+- Frontend (Steps 6–7): Vite React-TS, router, AuthContext, API services, and all pages —
+  register, login, list + search, auction page with bids/bid form, create auction.
+- **Every G feature works in the browser.** Progress ≈ 85% toward G. Next: design (Step 8).
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
@@ -149,19 +161,17 @@ Ctrl+R = search history, Tab = complete names.
 Source: assignment text, quoted in full at the bottom of this file.
 
 ### G (pass)
-- [ ] Create user (name, email, password) and log in. JWT authentication.
-      *(Backend done + tested 2026-10-14; React forms still to do.)*
+- [x] Create user (name, email, password) and log in. JWT authentication. (2026-10-17)
 - [x] (Foundation) Data saved in SQL Server: `AuctionDb` with Users/Auctions/Bids (2026-10-10).
-- [ ] Logged-in user can create an auction: title, description, price, start date, end date, creator.
-      *(Backend done + tested 2026-10-16.)*
-- [ ] Auction is **open** if end date > current date and time. *(Backend: filter + `IsOpen`.)*
-- [ ] Search auctions by title. Only open auctions in search results. *(Backend done + tested.)*
-- [ ] Select an auction → see all its bids. *(Backend done + tested 2026-10-16.)*
-- [ ] Place a bid (date + amount) if it's not your own auction. Must be higher than the current
-      highest bid, otherwise show a "bid too low" message. *(Backend rules done + tested.)*
-- [ ] Creator cannot bid on own auction, and the bid UI is **hidden** for them.
-      *(Backend blocks it; frontend must hide the form using `creatorId`.)*
-- [ ] All data fetched through Web API calls and shown in the browser.
+- [x] Logged-in user can create an auction: title, description, price, start date, end date, creator.
+- [x] Auction is **open** if end date > current date and time.
+- [x] Search auctions by title. Only open auctions in search results.
+- [x] Select an auction → see all its bids.
+- [x] Place a bid (date + amount) if it's not your own auction. Must be higher than the current
+      highest bid, otherwise show a "bid too low" message.
+- [x] Creator cannot bid on own auction, and the bid UI is **hidden** for them.
+- [x] All data fetched through Web API calls and shown in the browser.
+      *(All ticked 2026-10-17 after Kalle's browser tests; re-check everything in Step 9.)*
 - [ ] Well-designed UI and clean code following lesson guidelines. Runs without errors.
 
 ### VG (pass with distinction), on top of G
