@@ -15,7 +15,6 @@ public class AuctionProfile : Profile
             .ForMember(d => d.CreatorName, o => o.MapFrom(s => s.User.Name))
             .ForMember(d => d.HighestBid, o => o.MapFrom(s =>
                 s.Bids.Any() ? s.Bids.Max(b => b.Amount) : (decimal?)null))
-            .ForMember(d => d.IsOpen, o => o.MapFrom(s =>
-                s.StartDate <= DateTime.UtcNow && s.EndDate > DateTime.UtcNow));
+            .ForMember(d => d.IsOpen, o => o.MapFrom(s => s.IsOpenAt(DateTime.UtcNow)));
     }
 }
