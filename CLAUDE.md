@@ -31,10 +31,20 @@ Personal working preferences live in `~/.claude/CLAUDE.md`, not here.
 **Full backend review (2026-10-14):** builds 0/0, no vulnerable packages, no pending model changes.
 **Cleanup done (2026-10-16)** on `backend-cleanup`, merged into `backend` + pushed: JWT key moved
 to user-secrets (rotated, login + `/me` retested OK), file rename, `Program.cs` grouped, tidy-ups.
+**Step 4 done (2026-10-16)** on `backend-auctions`: `CreateAuctionDto`/`AuctionDto`,
+`Data/Profiles/AuctionProfile.cs` (AutoMapper; `IsOpen` + `HighestBid` computed), `AuctionRepo`
+(`Include` User + Bids, open filter, title `Contains`), `AuctionService` (dates → UTC, end > start,
+end > now), `AuctionsController` (`GET /api/auctions?title=`, `GET /api/auctions/{id:int}`,
+`[Authorize] POST /api/auctions` → 201). All 6 `.http` tests passed (create 201, list, search,
+get one, POST without token 401). Token walkthrough given in chat; Kalle reviews code later.
+Confirmed the UTC todo: dates read from the DB come back without `Z`.
+
 **Next steps:**
-1. Walk through the Part 5/6 code with Kalle (token creation + validation) so they can explain it.
-2. **Step 4** on `backend-auctions`: auctions endpoints (create with `[Authorize]` + creator from
-   token claim, search open auctions by title, get one). First use of AutoMapper.
+1. Commit + merge `backend-auctions` → `backend`, push, delete the branch.
+2. Fix the UTC todo (see "Known todos") — small, do it before or with Step 5.
+3. **Step 5** on `backend-bids`: `GET /api/auctions/{id}/bids` + `[Authorize] POST` with the bid
+   rules (open, not own auction, amount > max(highest bid, start price)).
+   After Step 5: merge `backend` → `main` (backend milestone).
 
 **Last session recap (2026-10-14)** — greet Kalle with this at the start of the next session:
 - Finished Step 3: `UserRepo`, `AuthService` (register rules + password hashing), `AuthController`.
@@ -109,8 +119,9 @@ Source: assignment text, quoted in full at the bottom of this file.
       *(Backend done + tested 2026-10-14; React forms still to do.)*
 - [x] (Foundation) Data saved in SQL Server: `AuctionDb` with Users/Auctions/Bids (2026-10-10).
 - [ ] Logged-in user can create an auction: title, description, price, start date, end date, creator.
-- [ ] Auction is **open** if end date > current date and time.
-- [ ] Search auctions by title. Only open auctions in search results.
+      *(Backend done + tested 2026-10-16.)*
+- [ ] Auction is **open** if end date > current date and time. *(Backend: filter + `IsOpen`.)*
+- [ ] Search auctions by title. Only open auctions in search results. *(Backend done + tested.)*
 - [ ] Select an auction → see all its bids.
 - [ ] Place a bid (date + amount) if it's not your own auction. Must be higher than the current
       highest bid, otherwise show a "bid too low" message.
@@ -234,6 +245,12 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
 7. Pages: register/login → auction list + search → details + bids → create auction.
 8. Design pass: consistent look, error/loading states, works on a phone-sized screen.
 9. Full run-through against the G checklist; fix anything that errors.
+
+## Known todos (fix before the frontend, Step 6)
+- **UTC on the way out:** EF reads `DateTime` back with `Kind = Unspecified`, so JSON has no `Z`
+  and the browser would treat it as local time. Fix: a `DateTime` value converter in
+  `OnModelCreating` (or `ConfigureConventions`) that marks read values as UTC. Check with
+  `GET /api/auctions` that dates end in `Z`.
 
 ## Open questions (VG only, decide when we get there)
 - Who may undo a bid: only the bidder who placed it? Assumption: yes.
