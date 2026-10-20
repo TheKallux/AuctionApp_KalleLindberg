@@ -1,24 +1,21 @@
-using AuctionApi.Data;
-using Microsoft.EntityFrameworkCore;
-using AuctionApi.Data.Interfaces;
-using AuctionApi.Data.Repos;
+using System.Text;
 using AuctionApi.Core.Interfaces;
 using AuctionApi.Core.Services;
+using AuctionApi.Data;
 using AuctionApi.Data.Entities;
-using Microsoft.AspNetCore.Identity;
-using System.Text;
+using AuctionApi.Data.Interfaces;
+using AuctionApi.Data.Repos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddCors();
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
-
 
 builder.Services.AddDbContext<AuctionDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

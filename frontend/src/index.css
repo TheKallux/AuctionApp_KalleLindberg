@@ -143,3 +143,7 @@ button:disabled {
   color: var(--color-danger);
   font-size: 0.95rem;
 }
+
+.form-card--wide {
+  max-width: 600px;
+}

@@ -14,20 +14,17 @@ public class UserRepo : IUserRepo
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _context.Users.FirstOrDefaultAsync(u =>
-        u.Email == email);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
     public async Task<bool> EmailExistsAsync(string email)
     {
-        return await _context.Users.AnyAsync(u =>
-        u.Email == email);
+        return await _context.Users.AnyAsync(u => u.Email == email);
     }
 
     public async Task<bool> NameExistsAsync(string name)
     {
-        return await _context.Users.AnyAsync(u =>
-        u.Name == name);
+        return await _context.Users.AnyAsync(u => u.Name == name);
     }
 
     public async Task AddAsync(User user)

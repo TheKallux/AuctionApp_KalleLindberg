@@ -94,11 +94,16 @@ phone view ✓, `dotnet build` / `npm run lint` / `npm run build` clean, no cons
 
 **`frontend` merged into `main` and pushed (2026-10-20)** — `main` holds the complete G solution.
 
+**Final review (2026-10-20):** all checks clean (build, lint, audit, vulnerable packages, model).
+Polish on `final-polish`: added missing `.form-card--wide`, RegisterPage back to the narrow card,
+401 → "Du behöver logga in igen." in `api.ts`, tidied `UserRepo`, `BusinessRuleException`,
+`Program.cs` (usings sorted), quotes in `main.tsx`.
+
 **Next steps (after G):**
 1. Before the demo: Kalle reads through all code (much of it written by Claude on request) and
    asks about anything unclear; practise the demo flow (register → create → search → bid as
    another user → "too low" → creator sees no bid form).
-2. Optional: VG features — decide with Kalle (see VG checklist + Open questions).
+2. ~~VG~~ — **decided 2026-10-20: G is enough, no VG features.** Only demo prep remains.
 
 **Old next steps (done, kept for history):**
 1. **`frontend-fixes` branch**:

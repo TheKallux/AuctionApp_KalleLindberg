@@ -30,6 +30,7 @@ async function getErrorMessage(response: Response): Promise<string> {
     // svaret var inte JSON
   }
 
+  if (response.status === 401) return "Du behöver logga in igen.";
   if (response.status === 404) return "Det du letar efter finns inte.";
 
   return `Något gick fel (${response.status})`;
