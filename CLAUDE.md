@@ -92,12 +92,13 @@ variables in `index.css`, `[role="alert"]` error style, `.card`/`.form-card`; `N
 (README with run instructions) done. Kalle ran the full G checklist in the browser: all 9 rows ✓,
 phone view ✓, `dotnet build` / `npm run lint` / `npm run build` clean, no console errors.
 
+**`frontend` merged into `main` and pushed (2026-10-20)** — `main` holds the complete G solution.
+
 **Next steps (after G):**
-1. Merge `final-check` → `frontend` → `main` and push (if not done).
-2. Before the demo: Kalle reads through all code (much of it written by Claude on request) and
+1. Before the demo: Kalle reads through all code (much of it written by Claude on request) and
    asks about anything unclear; practise the demo flow (register → create → search → bid as
    another user → "too low" → creator sees no bid form).
-3. Optional: VG features — decide with Kalle (see VG checklist + Open questions).
+2. Optional: VG features — decide with Kalle (see VG checklist + Open questions).
 
 **Old next steps (done, kept for history):**
 1. **`frontend-fixes` branch**:
