@@ -51,7 +51,7 @@ export default function CreateAuctionPage() {
     }
 
     return (
-        <section>
+        <section className="card form-card form-card--wide">
             <h1>Skapa auktion</h1>
             <form onSubmit={handleSubmit}>
                 <label>

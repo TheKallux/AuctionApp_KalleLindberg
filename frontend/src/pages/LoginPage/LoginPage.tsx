@@ -28,7 +28,7 @@ export default function LoginPage() {
     }
 
     return (
-        <section>
+        <section className="card form-card">
             <h1>Logga in</h1>
             <form onSubmit={handleSubmit}>
                 <label>

@@ -30,7 +30,7 @@ export default function RegisterPage() {
     }
 
     return (
-        <section>
+        <section className="card form-card form-card--wide">
             <h1>Registrera</h1>
             <form onSubmit={handleSubmit}>
                 <label>
