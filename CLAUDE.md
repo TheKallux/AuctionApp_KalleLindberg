@@ -79,11 +79,25 @@ pages in `pages/<Name>/<Name>.tsx`. Builds; navigation + redirect to /login test
   for "server unreachable" and 404.
 - Run: backend `dotnet run` in `backend/` + frontend `npm run dev` in `frontend/` (two terminals).
 
+`frontend-pages` merged into `frontend` + pushed (2026-10-17).
+
+**Code check (2026-10-17):** backend clean (0/0, no vulnerable packages, no model changes).
+Frontend builds, but `npm run lint` → 2 errors + 1 warning (`react-hooks/set-state-in-effect`,
+`exhaustive-deps`) in `HomePage`/`AuctionPage` — Claude's code. Still open on 2026-10-19.
+
 **Next steps:**
-1. Merge `frontend-pages` → `frontend`, push, delete the branch.
+1. **`frontend-fixes` branch** (not started yet):
+   - `HomePage`: fetch inside `useEffect` with `ignore` cleanup, keyed on a submitted `query` state;
+     `handleSearch` sets loading/error and `setQuery(search.trim())`.
+   - `AuctionPage`: same pattern, effect keyed on `[auctionId, reloadKey]`; after a bid
+     `setReloadKey((key) => key + 1)` instead of `await loadData()`.
+   - Delete `src/assets/hero.png`, `src/assets/vite.svg`, `public/icons.svg` (unused template files).
+   - `index.html`: `lang="sv"`, `<title>Auktioner</title>`. Format `api.ts` (Shift+Alt+F).
+   - Check: `npm run lint` (0 problems) + `npm run build` + click-test. Merge into `frontend`.
 2. **Step 8 – design pass** on `frontend-design`: own CSS (no copying), consistent look, spacing,
    navbar, forms, auction cards, error/loading styles, works on a phone-sized screen.
-3. **Step 9** – full run-through against the G checklist; then merge `frontend` → `main`.
+3. **Step 9** – full run-through against the G checklist (incl. `npm run lint`); then merge
+   `frontend` → `main`.
 4. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
    and asks about anything unclear — they must be able to explain it at the demo.
 
