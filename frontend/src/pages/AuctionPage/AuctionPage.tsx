@@ -16,26 +16,32 @@ export default function AuctionPage() {
     const [bids, setBids] = useState<Bid[]>([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [reloadKey, setReloadKey] = useState(0);
 
     const [amount, setAmount] = useState("");
     const [bidError, setBidError] = useState("");
     const [bidding, setBidding] = useState(false);
 
-    async function loadData() {
-        try {
-            const [auctionData, bidData] = await Promise.all([getAuction(auctionId), getBids(auctionId)]);
-            setAuction(auctionData);
-            setBids(bidData);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Kunde inte hämta auktionen");
-        } finally {
-            setLoading(false);
-        }
-    }
-
     useEffect(() => {
-        loadData();
-    }, [auctionId]);
+        let ignore = false;
+
+        Promise.all([getAuction(auctionId), getBids(auctionId)])
+            .then(([auctionData, bidData]) => {
+                if (ignore) return;
+                setAuction(auctionData);
+                setBids(bidData);
+            })
+            .catch((err) => {
+                if (!ignore) setError(err instanceof Error ? err.message : "Kunde inte hämta auktionen");
+            })
+            .finally(() => {
+                if (!ignore) setLoading(false);
+            });
+
+        return () => {
+            ignore = true;
+        };
+    }, [auctionId, reloadKey]);
 
     async function handleBid(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -46,7 +52,7 @@ export default function AuctionPage() {
         try {
             await placeBid(auctionId, Number(amount), user.token);
             setAmount("");
-            await loadData();
+            setReloadKey((key) => key + 1);
         } catch (err) {
             setBidError(err instanceof Error ? err.message : "Kunde inte lägga bud");
         } finally {

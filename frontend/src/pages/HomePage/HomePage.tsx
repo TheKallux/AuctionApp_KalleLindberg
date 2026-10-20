@@ -7,28 +7,34 @@ import { formatDate, formatPrice } from "../../utils/format";
 export default function HomePage() {
     const [auctions, setAuctions] = useState<Auction[]>([]);
     const [search, setSearch] = useState("");
+    const [query, setQuery] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
 
-    async function loadAuctions(title = "") {
-        setLoading(true);
-        setError("");
-        try {
-            setAuctions(await searchAuctions(title));
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Kunde inte hämta auktioner");
-        } finally {
-            setLoading(false);
-        }
-    }
-
     useEffect(() => {
-        loadAuctions();
-    }, []);
+        let ignore = false;
+
+        searchAuctions(query)
+            .then((data) => {
+                if (!ignore) setAuctions(data);
+            })
+            .catch((err) => {
+                if (!ignore) setError(err instanceof Error ? err.message : "Kunde inte hämta auktioner");
+            })
+            .finally(() => {
+                if (!ignore) setLoading(false);
+            });
+
+        return () => {
+            ignore = true;
+        };
+    }, [query]);
 
     function handleSearch(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        loadAuctions(search.trim());
+        setLoading(true);
+        setError("");
+        setQuery(search.trim());
     }
 
     return (
@@ -61,7 +67,6 @@ export default function HomePage() {
                                 : `Utropspris: ${formatPrice(auction.startPrice)}`}
                         </p>
                         <p>Slutar: {formatDate(auction.endDate)}</p>
-                        <p>Slutar: {new Date(auction.endDate).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" })}</p>
                     </li>
                 ))}
             </ul>
