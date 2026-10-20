@@ -85,8 +85,22 @@ pages in `pages/<Name>/<Name>.tsx`. Builds; navigation + redirect to /login test
 Frontend builds, but `npm run lint` → 2 errors + 1 warning (`react-hooks/set-state-in-effect`,
 `exhaustive-deps`) in `HomePage`/`AuctionPage` — Claude's code. Still open on 2026-10-19.
 
-**Next steps:**
-1. **`frontend-fixes` branch** (not started yet):
+**G COMPLETE (2026-10-20).** `frontend-fixes` (lint clean), `frontend-design` (own CSS: CSS
+variables in `index.css`, `[role="alert"]` error style, `.card`/`.form-card`; `Navbar.css` (BEM),
+`HomePage.css` (responsive `auto-fill` card grid), `AuctionPage.css` (status badge, details
+`dt: dd` grid, bid panel, `@media (min-width: 768px)` two columns, bid list)) and `final-check`
+(README with run instructions) done. Kalle ran the full G checklist in the browser: all 9 rows ✓,
+phone view ✓, `dotnet build` / `npm run lint` / `npm run build` clean, no console errors.
+
+**Next steps (after G):**
+1. Merge `final-check` → `frontend` → `main` and push (if not done).
+2. Before the demo: Kalle reads through all code (much of it written by Claude on request) and
+   asks about anything unclear; practise the demo flow (register → create → search → bid as
+   another user → "too low" → creator sees no bid form).
+3. Optional: VG features — decide with Kalle (see VG checklist + Open questions).
+
+**Old next steps (done, kept for history):**
+1. **`frontend-fixes` branch**:
    - `HomePage`: fetch inside `useEffect` with `ignore` cleanup, keyed on a submitted `query` state;
      `handleSearch` sets loading/error and `setQuery(search.trim())`.
    - `AuctionPage`: same pattern, effect keyed on `[auctionId, reloadKey]`; after a bid
@@ -101,15 +115,12 @@ Frontend builds, but `npm run lint` → 2 errors + 1 warning (`react-hooks/set-s
 4. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
    and asks about anything unclear — they must be able to explain it at the demo.
 
-**Last session recap (2026-10-16)** — greet Kalle with this at the start of the next session:
-- Moved the JWT key to user-secrets (new key) and tidied the code.
-- Step 4: auctions endpoints with AutoMapper — create, search open by title, get one. Tested.
-- Fixed dates so they always come back as UTC (`Z`).
-- Step 5: bids endpoints with all rules (open, not own auction, higher than current). Tested.
-- **The whole backend is done** and merged into `main`.
-- Frontend (Steps 6–7): Vite React-TS, router, AuthContext, API services, and all pages —
-  register, login, list + search, auction page with bids/bid form, create auction.
-- **Every G feature works in the browser.** Progress ≈ 85% toward G. Next: design (Step 8).
+**Last session recap (2026-10-20)** — greet Kalle with this at the start of the next session:
+- Fixed the React lint errors (`useEffect` pattern with cleanup) and removed template leftovers.
+- Step 8 design: own theme with CSS variables, dark navbar, card grid on the home page,
+  auction page with details + bid panel + bid list, form cards; responsive on phones.
+- Step 9: full G checklist in the browser — everything passed. README with run instructions.
+- **G is complete.** Next: read through the code + practise the demo; VG only if Kalle wants.
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
@@ -186,7 +197,8 @@ Source: assignment text, quoted in full at the bottom of this file.
 - [x] Creator cannot bid on own auction, and the bid UI is **hidden** for them.
 - [x] All data fetched through Web API calls and shown in the browser.
       *(All ticked 2026-10-17 after Kalle's browser tests; re-check everything in Step 9.)*
-- [ ] Well-designed UI and clean code following lesson guidelines. Runs without errors.
+- [x] Well-designed UI and clean code following lesson guidelines. Runs without errors.
+      *(Step 9, 2026-10-20: builds/lint clean, no console errors, phone view checked.)*
 
 ### VG (pass with distinction), on top of G
 - [ ] Not logged in = read-only (no bidding, no create/update auctions). Always verify user with JWT.
