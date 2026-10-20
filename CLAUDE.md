@@ -51,21 +51,76 @@ All `.http` tests passed: bid 50 → 400 too low, 150 → 201, creator bid → 4
 list bids, `/999/bids` → 404, auction `highestBid` = 150. Test users: `testuser` (creator,
 id 1) and `budgivare` (bidder, id 2), see `AuctionApi.http`.
 
-**Next steps:**
-1. Commit + merge `backend-bids` → `backend`, push, delete the branch.
-2. **Backend milestone:** merge `backend` → `main` (`git switch main` → `git pull` →
-   `git merge --no-ff backend` → `git push`). Kalle runs it.
-3. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
-   and asks about anything unclear — they must be able to explain it at the demo.
-4. **Step 6:** branch `frontend` from `main`, then `frontend-scaffold`: Vite React-TS, React Router,
-   `AuthContext` + `AuthProvider`, `services/` for API calls, `types/`.
+**Backend merged into `main` (2026-10-16).** Branch `frontend` created from `main` + pushed.
 
-**Last session recap (2026-10-16)** — greet Kalle with this at the start of the next session:
-- Moved the JWT key to user-secrets (new key) and tidied the code.
-- Step 4: auctions endpoints with AutoMapper — create, search open by title, get one. Tested.
-- Fixed dates so they always come back as UTC (`Z`).
-- Step 5: bids endpoints with all rules (open, not own auction, higher than current). Tested.
-- **The whole backend is done.** Progress ≈ 57% toward G. Next: merge to `main`, then frontend.
+**Step 6 Part 1 done (2026-10-17)** on `frontend-scaffold`: `frontend/` created with
+`npm create vite@latest frontend -- --template react-ts` (ESLint), `npm install`,
+`react-router-dom` installed; `npm run dev` shows the Vite page on `http://localhost:5173`.
+⚠️ Leftover outside the project: the first `npm install react-router-dom` ran in the repo root
+(no `package.json`) and landed in `C:\Users\kalle\package.json`. Clean-up (Kalle):
+`npm uninstall react-router-dom --prefix ~`. The `next` entry there is older and not ours — leave it.
+
+**Step 6 done (2026-10-17)** on `frontend-scaffold`: demo removed; `src/types/` (auction, bid,
+auth); `src/services/api.ts` (`request<T>`: base URL, Bearer header, throws `Error` with the
+backend `message` or first validation error, handles empty bodies) + `authService`,
+`auctionService`, `bidService`; `src/contexts/AuthContext.ts` (context + `useAuth`) and
+`AuthProvider.tsx` (user + token in `localStorage`, drops expired tokens via the JWT `exp`);
+`App.tsx` with `BrowserRouter` routes, `components/Navbar`, `components/RequireAuth`, placeholder
+pages in `pages/<Name>/<Name>.tsx`. Builds; navigation + redirect to /login tested.
+
+**Step 7 done (2026-10-17)** on `frontend-pages` — all pages work in the browser, tested by Kalle:
+- `RegisterPage` (auto-login after register), `LoginPage` (errors shown in the page).
+- `HomePage`: open auctions, search by title, loading/error/empty states.
+- `AuctionPage`: details, bids (highest first), bid form only when logged in + not creator + open;
+  creator sees "Det här är din auktion"; "too low" message from the backend shown in the form.
+- `CreateAuctionPage` (behind `RequireAuth`): `datetime-local` → `toISOString()` (UTC), end > start
+  checked in browser + backend, navigates to the new auction.
+- `src/utils/format.ts` (`formatDate`, `formatPrice`, sv-SE); `api.ts` gives Swedish messages
+  for "server unreachable" and 404.
+- Run: backend `dotnet run` in `backend/` + frontend `npm run dev` in `frontend/` (two terminals).
+
+`frontend-pages` merged into `frontend` + pushed (2026-10-17).
+
+**Code check (2026-10-17):** backend clean (0/0, no vulnerable packages, no model changes).
+Frontend builds, but `npm run lint` → 2 errors + 1 warning (`react-hooks/set-state-in-effect`,
+`exhaustive-deps`) in `HomePage`/`AuctionPage` — Claude's code. Still open on 2026-10-19.
+
+**G COMPLETE (2026-10-20).** `frontend-fixes` (lint clean), `frontend-design` (own CSS: CSS
+variables in `index.css`, `[role="alert"]` error style, `.card`/`.form-card`; `Navbar.css` (BEM),
+`HomePage.css` (responsive `auto-fill` card grid), `AuctionPage.css` (status badge, details
+`dt: dd` grid, bid panel, `@media (min-width: 768px)` two columns, bid list)) and `final-check`
+(README with run instructions) done. Kalle ran the full G checklist in the browser: all 9 rows ✓,
+phone view ✓, `dotnet build` / `npm run lint` / `npm run build` clean, no console errors.
+
+**Next steps (after G):**
+1. Merge `final-check` → `frontend` → `main` and push (if not done).
+2. Before the demo: Kalle reads through all code (much of it written by Claude on request) and
+   asks about anything unclear; practise the demo flow (register → create → search → bid as
+   another user → "too low" → creator sees no bid form).
+3. Optional: VG features — decide with Kalle (see VG checklist + Open questions).
+
+**Old next steps (done, kept for history):**
+1. **`frontend-fixes` branch**:
+   - `HomePage`: fetch inside `useEffect` with `ignore` cleanup, keyed on a submitted `query` state;
+     `handleSearch` sets loading/error and `setQuery(search.trim())`.
+   - `AuctionPage`: same pattern, effect keyed on `[auctionId, reloadKey]`; after a bid
+     `setReloadKey((key) => key + 1)` instead of `await loadData()`.
+   - Delete `src/assets/hero.png`, `src/assets/vite.svg`, `public/icons.svg` (unused template files).
+   - `index.html`: `lang="sv"`, `<title>Auktioner</title>`. Format `api.ts` (Shift+Alt+F).
+   - Check: `npm run lint` (0 problems) + `npm run build` + click-test. Merge into `frontend`.
+2. **Step 8 – design pass** on `frontend-design`: own CSS (no copying), consistent look, spacing,
+   navbar, forms, auction cards, error/loading styles, works on a phone-sized screen.
+3. **Step 9** – full run-through against the G checklist (incl. `npm run lint`); then merge
+   `frontend` → `main`.
+4. Kalle reads through the backend code (much of Steps 3–5 was written by Claude on request)
+   and asks about anything unclear — they must be able to explain it at the demo.
+
+**Last session recap (2026-10-20)** — greet Kalle with this at the start of the next session:
+- Fixed the React lint errors (`useEffect` pattern with cleanup) and removed template leftovers.
+- Step 8 design: own theme with CSS variables, dark navbar, card grid on the home page,
+  auction page with details + bid panel + bid list, form cards; responsive on phones.
+- Step 9: full G checklist in the browser — everything passed. README with run instructions.
+- **G is complete.** Next: read through the code + practise the demo; VG only if Kalle wants.
 
 **Session notes:** Kalle found `OnModelCreating` (fluent API) hard → explain it slowly, line by
 line. VS Code's terminal is PowerShell by default; Git Bash commands (`touch`, `mkdir -p`) need
@@ -104,6 +159,8 @@ Ctrl+R = search history, Tab = complete names.
 | List files | `ls <folder>` |
 | Open in VS Code | `code .` (whole folder) · `code <file>` |
 | Vim (e.g. merge message) | save + quit: `:wq` + Enter |
+| Merge without opening an editor | `git merge --no-ff <branch> --no-edit` |
+| Stuck in `MERGING` (editor closed) | `git commit --no-edit` → `git push` |
 | New .NET project | `dotnet new webapi --use-controllers -o <folder> -n <Name>` |
 | Add a NuGet package | `dotnet add package <Name> [--version x.y.z]` (inside the project folder) |
 | Create a migration (DB untouched) | `dotnet ef migrations add <Name>` (needs `EntityFrameworkCore.Design`) |
@@ -129,20 +186,19 @@ Ctrl+R = search history, Tab = complete names.
 Source: assignment text, quoted in full at the bottom of this file.
 
 ### G (pass)
-- [ ] Create user (name, email, password) and log in. JWT authentication.
-      *(Backend done + tested 2026-10-14; React forms still to do.)*
+- [x] Create user (name, email, password) and log in. JWT authentication. (2026-10-17)
 - [x] (Foundation) Data saved in SQL Server: `AuctionDb` with Users/Auctions/Bids (2026-10-10).
-- [ ] Logged-in user can create an auction: title, description, price, start date, end date, creator.
-      *(Backend done + tested 2026-10-16.)*
-- [ ] Auction is **open** if end date > current date and time. *(Backend: filter + `IsOpen`.)*
-- [ ] Search auctions by title. Only open auctions in search results. *(Backend done + tested.)*
-- [ ] Select an auction → see all its bids. *(Backend done + tested 2026-10-16.)*
-- [ ] Place a bid (date + amount) if it's not your own auction. Must be higher than the current
-      highest bid, otherwise show a "bid too low" message. *(Backend rules done + tested.)*
-- [ ] Creator cannot bid on own auction, and the bid UI is **hidden** for them.
-      *(Backend blocks it; frontend must hide the form using `creatorId`.)*
-- [ ] All data fetched through Web API calls and shown in the browser.
-- [ ] Well-designed UI and clean code following lesson guidelines. Runs without errors.
+- [x] Logged-in user can create an auction: title, description, price, start date, end date, creator.
+- [x] Auction is **open** if end date > current date and time.
+- [x] Search auctions by title. Only open auctions in search results.
+- [x] Select an auction → see all its bids.
+- [x] Place a bid (date + amount) if it's not your own auction. Must be higher than the current
+      highest bid, otherwise show a "bid too low" message.
+- [x] Creator cannot bid on own auction, and the bid UI is **hidden** for them.
+- [x] All data fetched through Web API calls and shown in the browser.
+      *(All ticked 2026-10-17 after Kalle's browser tests; re-check everything in Step 9.)*
+- [x] Well-designed UI and clean code following lesson guidelines. Runs without errors.
+      *(Step 9, 2026-10-20: builds/lint clean, no console errors, phone view checked.)*
 
 ### VG (pass with distinction), on top of G
 - [ ] Not logged in = read-only (no bidding, no create/update auctions). Always verify user with JWT.
@@ -343,6 +399,10 @@ amount > max(highest bid, start price), else 400 "Budet är för lågt".
   which migrations have run.
 - **"dotnet ef … doesn't reference Microsoft.EntityFrameworkCore.Design"?** → Install that package
   (same version as the other EF packages). *Why:* the EF tool needs it to load the DbContext.
+- **Why did `npm install` end up in my user folder?** → There was no `package.json` in the
+  current folder, so npm searched upwards and used `C:\Users\kalle\package.json`.
+  *Why:* npm works on the nearest `package.json` above you. Always `cd frontend` first (`ls`
+  must show `package.json`).
 - **`git add .` didn't include CLAUDE.md?** → `.` = current folder only; I was in `backend/`.
   *Why:* use `git add -A` for the whole repo, and `git status` before switching branches.
 - **Why did `git switch -c backend/scaffold` fail with "cannot lock ref"?** → A branch `backend`
