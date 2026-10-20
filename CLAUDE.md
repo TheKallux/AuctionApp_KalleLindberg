@@ -95,9 +95,10 @@ phone view ✓, `dotnet build` / `npm run lint` / `npm run build` clean, no cons
 **`frontend` merged into `main` and pushed (2026-10-20)** — `main` holds the complete G solution.
 
 **Final review (2026-10-20):** all checks clean (build, lint, audit, vulnerable packages, model).
-Polish on `final-polish`: added missing `.form-card--wide`, RegisterPage back to the narrow card,
-401 → "Du behöver logga in igen." in `api.ts`, tidied `UserRepo`, `BusinessRuleException`,
-`Program.cs` (usings sorted), quotes in `main.tsx`.
+Polish (committed directly on `main` as `af71e92`, then `frontend` fast-forwarded; both pushed):
+added missing `.form-card--wide`, RegisterPage back to the narrow card, 401 → "Du behöver logga
+in igen." in `api.ts`, tidied `UserRepo`, `BusinessRuleException`, `Program.cs` (usings sorted),
+quotes in `main.tsx`. **The project is finished; `main` = `frontend` = `af71e92` on GitHub.**
 
 **Next steps (after G):**
 1. Before the demo: Kalle reads through all code (much of it written by Claude on request) and
